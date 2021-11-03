@@ -10,6 +10,9 @@
 
 > [https://docs.pytest.org/en/latest/](https://docs.pytest.org/en/latest/)
 
+* This repository uses "Black" to format python code.
+
+> [https://black.readthedocs.io/en/latest/](https://black.readthedocs.io/en/latest/)
 
 ### Instructions
 
