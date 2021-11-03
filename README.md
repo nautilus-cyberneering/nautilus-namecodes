@@ -14,6 +14,11 @@
 
 > [https://black.readthedocs.io/en/latest/](https://black.readthedocs.io/en/latest/)
 
+* This repository uses "mypy" to type check the python code.
+
+> [https://github.com/python/mypy](https://github.com/python/mypy)
+
+
 ### Instructions
 
 This repository uses [Poetry: Dependency Management for Python].
