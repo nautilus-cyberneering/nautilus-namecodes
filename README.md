@@ -18,6 +18,10 @@
 
 > [https://github.com/python/mypy](https://github.com/python/mypy)
 
+* This repository uses 'pylint' to check the python code quality.
+
+> [https://pylint.org/](https://pylint.org/)
+
 
 ### Instructions
 
