@@ -22,6 +22,10 @@
 
 > [https://pylint.org/](https://pylint.org/)
 
+* This repository uses 'bandit' to code for security issues.
+
+> [https://bandit.readthedocs.io/en/latest/](https://bandit.readthedocs.io/en/latest/)
+
 
 ### Instructions
 
