@@ -1,0 +1,31 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "nautilus-namecodes"
+version = "0.1.0"
+description = "Nautilus Filename Specification (nautilus-namecodes)"
+license = "AGPL-3.0-only"
+authors = ["Cameron Garnham <cameron@nautilus-cyberneering.de>"]
+maintainers = ["Cameron Garnham <cameron@nautilus-cyberneering.de>"]
+readme = "README.md"
+repository = "https://github.com/da2ce7/nautilus-filename_specification"
+classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Development Status :: 1 - Planning",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3.9",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+# until poetry has full support for supports optional dependencies, we install tox here.
+tox = "^3.24.4"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+pytest-srcpaths = "^1.2.1"
