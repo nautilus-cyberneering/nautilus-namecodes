@@ -1,11 +1,38 @@
 # Configuration file for the Sphinx documentation builder.
 
-import nautilus_namecodes
+import sys
+from pathlib import Path
+
+
+def add_path_if_missing(path_str: str):
+    """Little function that adds a path to the python path if it is missing."""
+
+    if any(path_str == sys_path for sys_path in sys.path):
+        pass
+    else:
+        sys.path += [path_str]
+
+
+path_this: Path = Path(__file__).parent
+add_path_if_missing(str(path_this.absolute()))
+
+
+import _helpers  # pylint: disable=wrong-import-position
+
+path_root: Path = _helpers.get_path_to_project_root()
+path_src: Path = path_root.joinpath("src")
+
+add_path_if_missing(str(path_src.absolute()))
+
+
+import nautilus_namecodes  # pylint: disable=wrong-import-position
 
 # -- Project information -----------------------------------------------------
 
 project: str = "nautilus-namecodes"
-copyright: str = "2021, Nautilus Cyberneering GmbH "
+copyright: str = (  # pylint: disable=redefined-builtin
+    "2021, Nautilus Cyberneering GmbH "
+)
 author: str = "Cameron Garnham"
 
 # The full version, including alpha/beta/rc tags

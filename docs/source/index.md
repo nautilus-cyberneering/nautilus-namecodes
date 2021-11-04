@@ -10,7 +10,7 @@ internal/index.md
 ```{include} readme.md
 ```
 
-## (AGPL 3.0):
+## License: AGPL 3.0:
 
 
 ```{toctree}
