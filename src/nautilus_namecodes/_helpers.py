@@ -6,9 +6,23 @@ from pathlib import Path
 
 
 def get_path_to_project_root() -> Path:
-    """Gets the Path Object for the Project Root"""
+    """Gets the Path Object for the Project Root, by testing for 'pyproject.toml'"""
 
-    return Path(__file__).parent.parent.parent
+    path: Path = Path(__file__).parent
+
+    while path.joinpath("pyproject.toml").exists() is not True:
+        if path.home() == path:
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), str(path.absolute())
+            )
+        if len(str(path.absolute())) == 1:
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), str(path.absolute())
+            )
+
+        path = path.parent
+
+    return path
 
 
 def path_to_pyproject_toml() -> Path:
