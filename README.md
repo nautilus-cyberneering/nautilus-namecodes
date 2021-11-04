@@ -26,6 +26,10 @@
 
 > [https://bandit.readthedocs.io/en/latest/](https://bandit.readthedocs.io/en/latest/)
 
+* This repository uses 'isort' to check that imports are sorted.
+
+> [https://pycqa.github.io/isort/](https://pycqa.github.io/isort/)
+
 
 ### Instructions
 
