@@ -4,6 +4,16 @@
 
 *Nautilus namecodes are encoded filenames for media and other artistic creations in filesystem based content management systems.*
 
+### Libraries Used
+
+* This project depends on 'atoml' for processing the pyproject.toml file.
+  
+  MIT License Copyright (c) 2021 Frost Ming, 2018 Sébastien Eustace
+
+  > [https://github.com/frostming/atoml](https://github.com/frostming/atoml)
+
+
+
 ### Notes
 
 * This repository uses "pytest" to run python tests code.

@@ -23,6 +23,7 @@ classifiers = [
 python = "^3.9"
 # until poetry has full support for supports optional dependencies, we install tox here.
 tox = "^3.24.4"
+atoml = "^1.1.0"
 
 
 [tool.poetry.dev-dependencies]
@@ -34,3 +35,7 @@ mypy = "^0.910"
 pylint = "^2.11.1"
 bandit = "^1.7.0"
 isort = "^5.10.0"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
