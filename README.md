@@ -40,6 +40,11 @@
 
 > [https://pycqa.github.io/isort/](https://pycqa.github.io/isort/)
 
+* This repository uses Sphinx and Myst-Parser for documentation infrastructure.
+
+> [https://www.sphinx-doc.org/en/master/](https://www.sphinx-doc.org/en/master/)
+> [https://github.com/executablebooks/MyST-Parser](https://github.com/executablebooks/MyST-Parser)
+
 
 ### Instructions
 
