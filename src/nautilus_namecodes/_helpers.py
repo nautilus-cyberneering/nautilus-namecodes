@@ -1,4 +1,4 @@
-"""Helper Functions"""
+"""General Helper Functions"""
 
 import errno
 import os

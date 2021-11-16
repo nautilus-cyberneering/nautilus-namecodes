@@ -1,4 +1,4 @@
-# Configuration file for the Sphinx documentation builder.
+"""Configuration file for the Sphinx documentation builder."""
 
 import sys
 from pathlib import Path
@@ -25,18 +25,18 @@ path_src: Path = path_root.joinpath("src")
 add_path_if_missing(str(path_src.absolute()))
 
 
-import nautilus_namecodes  # pylint: disable=wrong-import-position
+from nautilus_namecodes import _version  # pylint: disable=wrong-import-position
 
 # -- Project information -----------------------------------------------------
 
-project: str = "nautilus-namecodes"
+project: str = "Nautilus Namecodes"
 copyright: str = (  # pylint: disable=redefined-builtin
     "2021, Nautilus Cyberneering GmbH "
 )
 author: str = "Cameron Garnham"
 
 # The full version, including alpha/beta/rc tags
-release: str = str(nautilus_namecodes.__version__)
+release: str = str(_version.__version__)
 
 
 # -- General configuration ---------------------------------------------------

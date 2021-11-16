@@ -1,4 +1,5 @@
-"""Set Package Version"""
+"""Get Version from pyproject.toml"""
+
 from pathlib import Path
 from typing import Any
 
