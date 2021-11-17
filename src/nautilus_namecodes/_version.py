@@ -36,7 +36,11 @@ def get_version() -> str:
     return version
 
 
-__version__: str = get_version()
+# We now use 'poetry-dynamic-versioning'
+# __version__: str = get_version()
+
+__version__ = "0.0.0"
+
 
 if __name__ == "__main__":
     print(get_version())

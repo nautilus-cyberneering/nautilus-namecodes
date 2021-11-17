@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-python@v2.2.2
 
       - name: Setup Poetry
-        uses: Gr1N/setup-poetry@v7
+        run: pip3 install poetry poetry-dynamic-versioning
 
       - name: Check Poetry
         run: poetry --version
