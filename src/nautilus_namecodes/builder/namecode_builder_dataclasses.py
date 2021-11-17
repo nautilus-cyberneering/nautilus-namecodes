@@ -47,7 +47,9 @@ class Section(CommonValues, CommonMethods):
         _partial_page: bool = bool(_number_of_items % ConstantValues.page_size)
 
         _pages_used = _full_pages + (0, 1)[_partial_page]
-        _pages_allocated = (1, _pages_used)[_pages_used]  # always have a page allocated
+        _pages_allocated = (1, _pages_used)[
+            bool(_pages_used)
+        ]  # always have a page allocated
 
         return _pages_allocated
 

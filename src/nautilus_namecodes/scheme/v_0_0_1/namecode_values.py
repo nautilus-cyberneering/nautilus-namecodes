@@ -101,7 +101,7 @@ class Modifications:
         _name: str = "Adaption"
 
         sections: list[Section] = [
-            Section(name="Reserved", values=[]),
+            Section(name="*reserved*", values=[]),
             Section(
                 name="focus",
                 values=[
@@ -162,7 +162,7 @@ class Modifications:
 
         _name: str = "Transformation"
         sections: list[Section] = [
-            Section(name="Reserved", values=[]),
+            Section(name="*reserved*", values=[]),
             Section(name="contrast", values=["low", "medium", "high", "extreme"]),
             Section(
                 name="colour",
@@ -240,7 +240,7 @@ class Modifications:
 
         _name: str = "Format"
         sections: list[Section] = [
-            Section(name="Reserved", values=[]),
+            Section(name="*reserved*", values=[]),
             Section(name="image_format", values=["tiff", "jpeg", "png"]),
             Section(name="colour_space", values=["sRGB", "AdobeRGB", "P3"]),
             Section(
@@ -308,7 +308,9 @@ class Modifications:
                 Modifications.Embeddedings.block,
             ]
         )
-        self._plane: Plane = Plane(name=Purpose._name.upper(), blocks=self._blocks)
+        self._plane: Plane = Plane(
+            name=Modifications._name.upper(), blocks=self._blocks
+        )
 
     @property
     def get_blocks(self) -> list[Block]:

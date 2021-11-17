@@ -8,15 +8,17 @@ from nautilus_namecodes.scheme.v_0_0_1.namecode_values import (
     Purpose,
 )
 
+__scheme_version__ = "v.0.0.1"
+
 
 class BaseNameCodes(BasicType):
     """Generate the Plane Codes for the BasicType"""
 
     def __init__(self) -> None:
+        super().__init__()
+
         self._start: int = 0x000
         self._planecodes: PlaneCodes = self.get_plane.get_plane_codes(self._start)
-
-        super().__init__()
 
     @property
     def get_plane_codes(self) -> PlaneCodes:
@@ -76,6 +78,7 @@ class AllNameCodes:
             name=self._name,
             codepoints_allocated=self.get_codepoints_allocated(),
             planes=self._planecodes,
+            scheme_version=__scheme_version__,
         )
 
     @property

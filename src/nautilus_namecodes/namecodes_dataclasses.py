@@ -11,6 +11,14 @@ class SectionCodes:
     codepoints_allocated: range
     codes: dict[int, str]
 
+    def gen_output_range(self) -> str:
+        """Generate Pretty Output For Codepoints Allocated Range"""
+        return (
+            f"0x{self.codepoints_allocated.start:=03X}"
+            f" - "
+            f"0x{self.codepoints_allocated.stop:=03X}"
+        )
+
 
 @dataclass
 class BlockCodes(SectionCodes):
@@ -44,6 +52,7 @@ class AllCodes(SectionCodes):
 
     planes: list[PlaneCodes]
     codes: dict[int, str] = field(init=False)
+    scheme_version: str
 
     def __post_init__(self) -> None:
         self.codes = {}

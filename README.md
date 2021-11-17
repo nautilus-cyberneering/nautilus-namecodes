@@ -6,6 +6,10 @@
 
 *Nautilus namecodes are encoded filenames for media and other artistic creations in filesystem based content management systems.*
 
+### Command Line Interface:
+
+This application can be launched from the command line.
+
 ### Libraries Used
 
 * This project depends on 'atoml' for processing the pyproject.toml file.
@@ -14,7 +18,11 @@
 
   > [https://github.com/frostming/atoml](https://github.com/frostming/atoml)
 
+* This project depends on 'typer' for creating the CLI.
 
+  MIT License Copyright (c) 2019 Sebastián Ramírez
+
+  > [https://github.com/tiangolo/typer](https://github.com/tiangolo/typer)
 
 ### Notes
 
