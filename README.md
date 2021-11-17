@@ -2,13 +2,25 @@
 
 ## [💠 View Project Documentation 📖](https://nautilus-namecodes.readthedocs.io/en/latest/)
 
+## [💠 View Project on the Python Package Index 📦](https://pypi.org/project/nautilus-namecodes/)
+
 ### (nautilus-namecodes)
 
 *Nautilus namecodes are encoded filenames for media and other artistic creations in filesystem based content management systems.*
 
+### Installation
+
+To instal this application you can use pip: [package installer for Python](https://pip.pypa.io/en/latest/).
+
+`pip3 install nautilus-namecodes`
+
 ### Command Line Interface:
 
-This application can be launched from the command line.
+While this application is primarily focused as an application library, a small command line interface is included.
+
+For example you can print all the Name Codes with this command:
+
+`nautilus-namecodes codes --show-all`
 
 ### Libraries Used
 
@@ -56,21 +68,21 @@ This application can be launched from the command line.
 > [https://github.com/executablebooks/MyST-Parser](https://github.com/executablebooks/MyST-Parser)
 
 
-### Instructions
+### Development Instructions
 
-This repository uses [Poetry: Dependency Management for Python].
+This repository uses [Poetry: Dependency Management for Python, include the 'Poetry Dynamic Versioning' extension].
 
 1. Install Python.
 
 > [https://www.python.org/downloads/](https://www.python.org/downloads/)
+s
+2. Install Poetry and Poetry Dynamic Versioning
 
-2. Install Poetry.
+> `pip3 install poetry poetry-dynamic-versioning`
 
-> [https://github.com/python-poetry/poetry](https://github.com/python-poetry/poetry)
+3. Clone the `nautilus-namecodes` repository development tree.
 
-3. Clone the `nautilus-filename_specification` repository.
-
-> [https://github.com/da2ce7/nautilus-filename_specification/tree/develop](https://github.com/da2ce7/nautilus-filename_specification/tree/develop)
+> [https://github.com/da2ce7/nautilus-namecodes/tree/develop](https://github.com/da2ce7/nautilus-namecodes/tree/develop)
 
 4. Change Directory to the cloned repository:
 
