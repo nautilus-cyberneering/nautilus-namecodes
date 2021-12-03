@@ -48,7 +48,7 @@ jobs:
         run: poetry run pylint src tests
 
       - name: Run Bandit Checks
-        run: poetry run bandit --recursive src tests
+        run: poetry run bandit --configfile ./pyproject.toml --recursive src tests
 
       - name: Run isort Checks
         run: poetry run isort --check-only .

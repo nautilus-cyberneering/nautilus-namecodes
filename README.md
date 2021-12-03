@@ -36,6 +36,12 @@ For example you can print all the Name Codes with this command:
 
   > [https://github.com/tiangolo/typer](https://github.com/tiangolo/typer)
 
+* This project includes 'SnakeMD' for generating Markdown.
+
+  MIT License Copyright (c) 2021 Jeremy Grifski
+
+  > [https://github.com/TheRenegadeCoder/SnakeMD](https://github.com/TheRenegadeCoder/SnakeMD)
+
 ### Notes
 
 * This repository uses "pytest" to run python tests code.
