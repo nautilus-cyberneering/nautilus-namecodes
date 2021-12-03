@@ -48,7 +48,7 @@ class ModificationsNameCodes(Modifications):
         super().__init__()
 
         self._start: int = 0x600
-        self._planecodes: PlaneCodes = self.get_plane.get_plane_codes(self._start)
+        self._planecodes: PlaneCodes = self.get_plane().get_plane_codes(self._start)
 
     @property
     def get_plane_codes(self) -> PlaneCodes:
@@ -76,6 +76,7 @@ class AllNameCodes:
 
         self._allcodes: AllCodes = AllCodes(  # pylint: disable=no-value-for-parameter
             name=self._name,
+            description=__doc__,
             codepoints_allocated=self.get_codepoints_allocated(),
             planes=self._planecodes,
             scheme_version=__scheme_version__,
