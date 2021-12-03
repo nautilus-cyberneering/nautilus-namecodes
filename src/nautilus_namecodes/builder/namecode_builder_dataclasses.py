@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import InitVar, dataclass
 from itertools import accumulate
+from typing import Iterable, Optional
 
 from nautilus_namecodes.namecodes_dataclasses import (
     BlockCodes,
@@ -23,6 +24,7 @@ class CommonValues:
     """Attributes that are common all generation data classes."""
 
     name: str
+    description: Optional[str]
 
 
 class CommonMethods(ABC):  # pylint: disable=too-few-public-methods
@@ -75,7 +77,10 @@ class Section(CommonValues, CommonMethods):
         _codes: dict[int, str] = dict(zip(_used_codepoints, _values_formated))
 
         return SectionCodes(
-            name=self.name, codepoints_allocated=_codepoints_allocated, codes=_codes
+            name=self.name,
+            description=self.description,
+            codepoints_allocated=_codepoints_allocated,
+            codes=_codes,
         )
 
     @staticmethod
@@ -95,7 +100,7 @@ class Section(CommonValues, CommonMethods):
 class Block(CommonValues, CommonMethods):
     """A Group of Sections"""
 
-    sections: list[Section]
+    sections: Iterable[Section]
     pages_minimum: InitVar[int] = 0
 
     def __post_init__(self, pages_minimum: int) -> None:
@@ -138,6 +143,7 @@ class Block(CommonValues, CommonMethods):
 
         _block_codes: BlockCodes = BlockCodes(  # pylint: disable=no-value-for-parameter
             name=self.name,
+            description=self.description,
             codepoints_allocated=_codepoints_allocated,
             sections=_section_codes,
         )
@@ -154,7 +160,13 @@ class Plane(CommonValues, CommonMethods):
     def get_block_page_allocations(self) -> list[int]:
         """Get the number of allocated pages per Block"""
 
-        return [block.get_pages_allocated() for block in self.blocks]
+        block: Block
+        allocations: list[int] = []
+
+        for block in self.blocks:
+            allocations.append(block.get_pages_allocated())
+
+        return allocations
 
     def get_pages_allocated(self) -> int:
         return sum(self.get_block_page_allocations())
@@ -187,6 +199,7 @@ class Plane(CommonValues, CommonMethods):
 
         _plane_codes: PlaneCodes = PlaneCodes(  # pylint: disable=no-value-for-parameter
             name=self.name,
+            description=self.description,
             codepoints_allocated=_codepoints_allocated,
             blocks=_block_codes,
         )

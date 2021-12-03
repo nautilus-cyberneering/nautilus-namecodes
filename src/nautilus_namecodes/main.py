@@ -42,31 +42,40 @@ exclusivity_callback = mutually_exclusive_group()
 
 @app.command()
 def codes(
-    show_all: bool = typer.Option(
-        None,
-        "--show-all",
-        help="Print All Codes to Console.",
-        callback=exclusivity_callback,
-    ),
     show_tree: bool = typer.Option(
         None,
         "--show-tree",
         help="Print Summary Tree to Console.",
         callback=exclusivity_callback,
     ),
+    show_blocks: bool = typer.Option(
+        None,
+        "--show-blocks",
+        help="Print Blocks with Codes to Console.",
+        callback=exclusivity_callback,
+    ),
+    show_codes: bool = typer.Option(
+        None,
+        "--show-codes",
+        help="Print Codes to Console.",
+        callback=exclusivity_callback,
+    ),
 ) -> None:
     """Command for the Management of Name Codes"""
 
-    if not any([show_all, show_tree]):
+    if not any([show_tree, show_blocks, show_codes]):
         raise typer.BadParameter(
-            "Required to specify either: --show-all or --show-tree."
+            "Required to specify either: --show-tree, --show-blocks, --show-codes, ."
         )
 
-    if show_all:
-        typer.echo(ConsoleOutput().gen_full_output())
-
     if show_tree:
-        typer.echo(ConsoleOutput().gen_tree_output())
+        typer.echo(ConsoleOutput.generate_tree_output())
+
+    if show_blocks:
+        typer.echo(ConsoleOutput.generate_blocks_output())
+
+    if show_codes:
+        typer.echo(ConsoleOutput.generate_codes_output())
 
 
 @app.callback()

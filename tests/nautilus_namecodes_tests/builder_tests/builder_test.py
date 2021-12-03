@@ -57,6 +57,7 @@ class SectionTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.section: Section = Section(
             name="Test Section",
+            description="Test",
             values=["Test", "One", "Two"],
         )
 
@@ -89,20 +90,24 @@ class BlockTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
 
-        self.section: Section = Section(name="S1", values=["Block", "Test", "Section"])
+        self.section: Section = Section(
+            name="S1", description="Test", values=["Block", "Test", "Section"]
+        )
         self.section2: Section = Section(
-            name="S2", values=["Block", "Second", "Section"]
+            name="S2", description="Test", values=["Block", "Second", "Section"]
         )
 
         self.section3: Section = Section(
-            name="S3", values=["Block", "Third", "Section"]
+            name="S3", description="Test", values=["Block", "Third", "Section"]
         )
 
         self.section_list: list[Section] = list(
             [self.section, self.section2, self.section3]
         )
 
-        self.block: Block = Block(name="TestBlock", sections=self.section_list)
+        self.block: Block = Block(
+            name="TestBlock", description="Test", sections=self.section_list
+        )
         self.blockcodes: BlockCodes = self.block.get_block_codes(0x100)
 
     def test_block(self):
@@ -139,21 +144,29 @@ class PlaneTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
 
-        self.section: Section = Section(name="S1", values=["Plane", "Test", "Section"])
+        self.section: Section = Section(
+            name="S1", description="Test", values=["Plane", "Test", "Section"]
+        )
         self.section2: Section = Section(
-            name="S2", values=["Plane", "Second", "Section"]
+            name="S2", description="Test", values=["Plane", "Second", "Section"]
         )
 
         self.section_list: list[Section] = list([self.section, self.section2])
 
         self.section_list2: list[Section] = list([self.section, self.section2])
 
-        self.block: Block = Block(name="TestPlane", sections=self.section_list)
-        self.block2: Block = Block(name="TestPlane2", sections=self.section_list2)
+        self.block: Block = Block(
+            name="TestPlane", description="Test", sections=self.section_list
+        )
+        self.block2: Block = Block(
+            name="TestPlane2", description="Test", sections=self.section_list2
+        )
 
         self.block_list: list[Block] = list([self.block, self.block2])
 
-        self.plane: Plane = Plane(name="TestPlane", blocks=self.block_list)
+        self.plane: Plane = Plane(
+            name="TestPlane", description="Test", blocks=self.block_list
+        )
 
         self.planecodes: PlaneCodes = self.plane.get_plane_codes(0x100)
 

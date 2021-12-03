@@ -1,6 +1,7 @@
 """Data Classes for Constructed Namecodes"""
 
 from dataclasses import dataclass, field
+from typing import Optional
 
 
 @dataclass
@@ -8,6 +9,7 @@ class SectionCodes:
     """Data Class for Generated Section Codes"""
 
     name: str
+    description: Optional[str]
     codepoints_allocated: range
     codes: dict[int, str]
 

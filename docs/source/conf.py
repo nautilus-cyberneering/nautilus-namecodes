@@ -20,9 +20,12 @@ add_path_if_missing(str(path_this.absolute()))
 import _helpers  # pylint: disable=wrong-import-position
 
 path_root: Path = _helpers.get_path_to_project_root()
+
 path_src: Path = path_root.joinpath("src")
+path_contrib: Path = path_root.joinpath("contrib")
 
 add_path_if_missing(str(path_src.absolute()))
+add_path_if_missing(str(path_contrib.absolute()))
 
 
 from nautilus_namecodes import _version  # pylint: disable=wrong-import-position

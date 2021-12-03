@@ -1,6 +1,6 @@
-# Generate Console Formatted Output of NameCodes
+# Generate Console Output of NameCodes Definitions.
 
 ```{eval-rst}
-.. automodule:: nautilus_namecodes.format.print_console
+.. automodule:: nautilus_namecodes.format.generate_console
     :members:
 ```
