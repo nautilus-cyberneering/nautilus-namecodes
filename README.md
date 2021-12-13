@@ -36,6 +36,12 @@ For example you can print all the Name Codes with this command:
 
   > [https://github.com/tiangolo/typer](https://github.com/tiangolo/typer)
 
+* This project depends on 'pydantic' for Json Schema.
+
+  MIT License Copyright (c) 2021 Samuel Colvin
+
+  > [https://github.com/samuelcolvin/pydantic](https://github.com/samuelcolvin/pydantic)
+
 * This project includes 'SnakeMD' for generating Markdown.
 
   MIT License Copyright (c) 2021 Jeremy Grifski

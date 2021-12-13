@@ -33,6 +33,7 @@ python = "^3.9"
 tox = "^3.24.4"
 atoml = "^1.1.0"
 typer = {version = "^0.4.0", extras = ["all"]}
+pydantic = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
