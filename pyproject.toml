@@ -1,0 +1,83 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "nautilus-namecodes"
+version = "0.0.0"
+description = "Nautilus Filename Specification (nautilus-namecodes)"
+license = "AGPL-3.0-only"
+authors = ["Cameron Garnham <cameron@nautilus-cyberneering.de>"]
+maintainers = ["Cameron Garnham <cameron@nautilus-cyberneering.de>"]
+readme = "README.md"
+repository = "https://github.com/da2ce7/nautilus-filename_specification"
+classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Development Status :: 1 - Planning",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3.9",
+]
+
+packages = [
+    { include = "nautilus_namecodes", from = "src" },
+    { include = "snakemd", from = "contrib" }
+    ]
+
+[tool.poetry.scripts]
+nautilus-namecodes = "nautilus_namecodes.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+# until poetry has full support for supports optional dependencies, we install tox here.
+tox = "^3.24.4"
+atoml = "^1.1.0"
+typer = {version = "^0.4.0", extras = ["all"]}
+pydantic = "^1.8.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pytest-cov = "^3.0.0"
+pytest-srcpaths = "^1.2.1"
+black = "^21.10b0"
+mypy = "^0.910"
+pylint = "^2.11.1"
+bandit = "^1.7.0"
+isort = "^5.10.0"
+Sphinx = "^4.2.0"
+myst-parser = "^0.15.2"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["src/nautilus_namecodes/_version.py"]
+patterns = ["(^__version__\\s*(?::\\s*str)?\\s*=\\s*['\"])[^'\"]*(['\"])"]
+
+[tool.black]
+extend-exclude = "/contrib/snakemd"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+extend_skip_glob = ["contrib/snakemd/generator.py"]
+
+[tool.mypy]
+exclude = '^.*contrib/snakemd.*\.py$|^docs/source/conf\.py$'
+mypy_path = "src:contrib"
+namespace_packages = true
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = "snakemd.*"
+ignore_errors = true
+
+[tool.bandit]
+skips = ["B101"]
+
+[tool.pylint.master]
+ignore-paths="^.*contrib/snakemd.*py$"
+
+[tool.pylint.FORMAT]
+max-line-length=120
