@@ -11,7 +11,7 @@ from nautilus_namecodes.namecodes_dataclasses import (
     PlaneCodes,
     SectionCodes,
 )
-from nautilus_namecodes.scheme.v_0_0_1.namecodes import AllNameCodes
+from nautilus_namecodes.scheme.v_0_1_0.namecodes import AllNameCodes
 
 
 class MarkdownOutput:

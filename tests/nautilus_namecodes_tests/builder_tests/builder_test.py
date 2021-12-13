@@ -74,7 +74,9 @@ class SectionTestCase(unittest.TestCase):
     def test_section_codes(self):
         """Test Created SectionCodes"""
         self.assertEqual(self.section_codes.name, "Test Section")
-        self.assertEqual(self.section_codes.codepoints_allocated, range(0x100, 0x10F))
+        self.assertEqual(
+            self.section_codes.codepoints_allocated.range, range(0x100, 0x10F)
+        )
         self.assertEqual(
             self.section_codes.codes,
             {
@@ -120,7 +122,9 @@ class BlockTestCase(unittest.TestCase):
     def test_block_codes(self):
         """Test Created BlockCodes"""
         self.assertEqual(self.blockcodes.name, "TestBlock")
-        self.assertEqual(self.blockcodes.codepoints_allocated, range(0x100, 0x12F))
+        self.assertEqual(
+            self.blockcodes.codepoints_allocated.range, range(0x100, 0x12F)
+        )
         self.assertEqual(len(self.blockcodes.sections), len(self.section_list))
         self.assertEqual(len(self.blockcodes.codes), 9)
         self.assertEqual(
@@ -180,7 +184,9 @@ class PlaneTestCase(unittest.TestCase):
     def test_block_codes(self):
         """Test Created BlockCodes"""
         self.assertEqual(self.planecodes.name, "TestPlane")
-        self.assertEqual(self.planecodes.codepoints_allocated, range(0x100, 0x13F))
+        self.assertEqual(
+            self.planecodes.codepoints_allocated.range, range(0x100, 0x13F)
+        )
         self.assertEqual(len(self.planecodes.blocks), len(self.section_list))
         self.assertEqual(len(self.planecodes.codes), 12)
         self.assertEqual(

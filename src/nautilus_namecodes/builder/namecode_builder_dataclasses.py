@@ -8,6 +8,7 @@ from typing import Iterable, Optional
 from nautilus_namecodes.namecodes_dataclasses import (
     BlockCodes,
     PlaneCodes,
+    Range,
     SectionCodes,
 )
 
@@ -79,7 +80,7 @@ class Section(CommonValues, CommonMethods):
         return SectionCodes(
             name=self.name,
             description=self.description,
-            codepoints_allocated=_codepoints_allocated,
+            codepoints_allocated=Range.mk_range(_codepoints_allocated),
             codes=_codes,
         )
 
@@ -144,7 +145,7 @@ class Block(CommonValues, CommonMethods):
         _block_codes: BlockCodes = BlockCodes(  # pylint: disable=no-value-for-parameter
             name=self.name,
             description=self.description,
-            codepoints_allocated=_codepoints_allocated,
+            codepoints_allocated=Range.mk_range(_codepoints_allocated),
             sections=_section_codes,
         )
 
@@ -200,7 +201,7 @@ class Plane(CommonValues, CommonMethods):
         _plane_codes: PlaneCodes = PlaneCodes(  # pylint: disable=no-value-for-parameter
             name=self.name,
             description=self.description,
-            codepoints_allocated=_codepoints_allocated,
+            codepoints_allocated=Range.mk_range(_codepoints_allocated),
             blocks=_block_codes,
         )
 
