@@ -36,13 +36,16 @@ class NautilusNamecodesTreeModel(BaseModel):
 class NautilusNamecodesListModel(BaseModel):
     """Pydantic Model for Nautilus Namecodes List"""
 
-    namecodes: Dict[int, str] = Field(title="Namecodes")
+    data: Dict[int, str] = Field(title="Namecodes")
 
     class Config:  # pylint: disable="missing-class-docstring"
         title = "Nautilus Namecodes List Dataclass"
 
 
 if __name__ == "__main__":
+
+    print(NautilusNamecodesModel.schema_json())
+
     all_codes: AllCodes = AllNameCodes().get_all_codes
     tree_stub: TreeStub = TreeStubGen().tree_stub
 

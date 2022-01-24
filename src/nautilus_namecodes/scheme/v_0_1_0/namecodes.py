@@ -15,6 +15,7 @@ from nautilus_namecodes.namecodes_dataclasses import (
 )
 from nautilus_namecodes.scheme.v_0_1_0.namecode_values import (
     BasicType,
+    Listing,
     Modifications,
     Purpose,
 )
@@ -52,13 +53,28 @@ class PurposeNameCodes(Purpose):
         return self._planecodes
 
 
+class ListingNameCodes(Listing):
+    """Generate the Plane Codes for the Purpose"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._start: int = 0x600
+        self._planecodes: PlaneCodes = self.get_plane.get_plane_codes(self._start)
+
+    @property
+    def get_plane_codes(self) -> PlaneCodes:
+        """Returns the Plane Codes Property"""
+        return self._planecodes
+
+
 class ModificationsNameCodes(Modifications):
     """Generate the Plane Codes for the Modifications"""
 
     def __init__(self) -> None:
         super().__init__()
 
-        self._start: int = 0x600
+        self._start: int = 0x800
         self._planecodes: PlaneCodes = self.get_plane().get_plane_codes(self._start)
 
     @property
@@ -77,6 +93,7 @@ class AllNameCodes:
             [
                 BaseNameCodes().get_plane_codes,
                 PurposeNameCodes().get_plane_codes,
+                ListingNameCodes().get_plane_codes,
                 ModificationsNameCodes().get_plane_codes,
             ]
         )
