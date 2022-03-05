@@ -1,6 +1,8 @@
 """Encode and Decode a Filename"""
 
 from typing import Dict, List, Optional, Tuple
+
+import pydantic
 from nautilus_namecodes.namecodes_dataclasses import AllCodes
 from nautilus_namecodes.scheme.v_0_1_0.filename import (
     Base,
@@ -83,5 +85,5 @@ model: NautilusNamecodesFilenameBaseModel = NautilusNamecodesFilenameBaseModel(
     encoding=filename
 )
 
-# print(model.schema_json())
+print(model.schema_json())
 print(model.json())

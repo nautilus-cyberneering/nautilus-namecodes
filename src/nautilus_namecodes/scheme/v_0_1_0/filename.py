@@ -2,7 +2,12 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
+# from pydantic.dataclasses import dataclass
 from typing import List, Literal, Tuple, Union
+
+import pydantic
+
 
 from nautilus_namecodes.namecodes_dataclasses import AllCodes
 
@@ -38,7 +43,8 @@ class Modification:
     code: str
 
 
-@dataclass
+### Hack for Pydantic.
+@pydantic.dataclasses.dataclass
 class Modifications:
     """A list of modifications along the way an artwork in the Library."""
 
@@ -73,8 +79,8 @@ class Way(ABC):
     """Abstract Way Class"""
 
     @abstractmethod
-    def get_way(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
-        """Used as a recursive way to form the list of Namecodes"""
+    def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
+        """Used to form the list of Namecodes"""
 
 
 @dataclass
@@ -83,8 +89,16 @@ class BaseVariant(Way):
 
     modifications: Modifications
 
-    def get_way(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
-        pass
+    def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
+        return all_codes.planes["Way"].blocks["Way"].sections["way"].codes["variant"]
+
+    def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
+
+        way: Tuple[int, str] = self.get_way(all_codes)
+
+        codes: List[Tuple[int, str]] = self.modifications.get_codes(all_codes)
+
+        return [way, *codes]
 
 
 @dataclass
@@ -93,7 +107,7 @@ class Base(Way):
 
     base_or_vairant: Union[Literal["base"], BaseVariant]
 
-    def get_way(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
+    def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
         pass
 
 
@@ -103,7 +117,7 @@ class BaseAlternativeVairant(Way):
 
     modifications: Modifications
 
-    def get_way(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
+    def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
         pass
 
 
@@ -113,7 +127,7 @@ class BaseAlternative(Way):
 
     base_alternative_or_vairant: Union[Literal["base"], BaseAlternativeVairant]
 
-    def get_way(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
+    def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
         pass
 
 
@@ -124,7 +138,7 @@ class GoldAlternative(Way):
     modifications: Modifications
     gold_or_base_alternative: Union[Literal["alternative"], BaseAlternative]
 
-    def get_way(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
+    def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
         pass
 
 
@@ -134,7 +148,7 @@ class Gold(Way):
 
     gold_alternative_or_base: Union[Literal["gold"], GoldAlternative, Base]
 
-    def get_way(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
+    def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
         pass
 
 
