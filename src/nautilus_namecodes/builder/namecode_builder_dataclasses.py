@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import InitVar, dataclass
 from itertools import accumulate
-from typing import Iterable, Optional
+from typing import Dict, Iterable, List, Optional, OrderedDict, Tuple
 
 from nautilus_namecodes.namecodes_dataclasses import (
     BlockCodes,
@@ -75,7 +75,11 @@ class Section(CommonValues, CommonMethods):
             for value in self.values
         ]
 
-        _codes: dict[int, str] = dict(zip(_used_codepoints, _values_formated))
+        _code_list: List[Tuple[int, str]] = list(
+            zip(_used_codepoints, _values_formated)
+        )
+
+        _codes: Dict[str, Tuple[int, str]] = dict(zip(self.values, _code_list))
 
         return SectionCodes(
             name=self.name,
@@ -128,12 +132,16 @@ class Block(CommonValues, CommonMethods):
             zip(self.sections, _section_offsets)
         )
 
-        _section_codes: list[SectionCodes] = [
-            section_and_offset[0].get_section_codes(
+        _section_codes_list: List[Tuple[str, BlockCodes]] = []
+
+        for section_and_offset in _sections_and_offsets:
+            sectioncode: SectionCodes = section_and_offset[0].get_section_codes(
                 starting_codepoint + section_and_offset[1] * ConstantValues.page_size
             )
-            for section_and_offset in _sections_and_offsets
-        ]
+            _section_codes_tuple: Tuple[str, BlockCodes] = sectioncode.name, sectioncode
+            _section_codes_list.append(_section_codes_tuple)
+
+        _section_codes: OrderedDict = OrderedDict(_section_codes_list)
 
         _codepoints_allocated = range(
             starting_codepoint,
@@ -184,12 +192,16 @@ class Plane(CommonValues, CommonMethods):
             zip(self.blocks, _block_offsets)
         )
 
-        _block_codes: list[BlockCodes] = [
-            block_and_offset[0].get_block_codes(
+        _block_codes_list: List[Tuple[str, BlockCodes]] = []
+
+        for block_and_offset in _blocks_and_offsets:
+            blockcode: BlockCodes = block_and_offset[0].get_block_codes(
                 starting_codepoint + block_and_offset[1] * ConstantValues.page_size
             )
-            for block_and_offset in _blocks_and_offsets
-        ]
+            _block_codes_tuple: Tuple[str, BlockCodes] = blockcode.name, blockcode
+            _block_codes_list.append(_block_codes_tuple)
+
+        _block_codes: OrderedDict = OrderedDict(_block_codes_list)
 
         _codepoints_allocated = range(
             starting_codepoint,

@@ -53,9 +53,7 @@ if __name__ == "__main__":
 
     nautilus_namecodes_model = NautilusNamecodesModel(data=all_codes)
     nautilus_namecodes_tree_model = NautilusNamecodesTreeModel(data=tree_stub)
-    nautilus_namecodes_list_model = NautilusNamecodesListModel(
-        namecodes=all_codes.codes
-    )
+    nautilus_namecodes_list_model = NautilusNamecodesListModel(data=all_codes.codes)
 
     print("\n\n\n\n\n\n")
     print(nautilus_namecodes_model.schema_json(indent=2))

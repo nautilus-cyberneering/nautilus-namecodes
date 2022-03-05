@@ -2,7 +2,7 @@
 
 # pylint: disable=too-few-public-methods
 
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable
 
 from nautilus_namecodes.builder.namecode_builder_dataclasses import (
     Block,
@@ -11,11 +11,15 @@ from nautilus_namecodes.builder.namecode_builder_dataclasses import (
 )
 
 
-class BasicType:
-    """Basic Types of Namecodes: Index, Metadata, and Media"""
+class DataType:
+    """Data Types of Namecodes: Index, Metadata, and Media"""
 
-    _name: str = "BasicType"
-    _values: list[str] = ["index", "metadata", "media"]
+    _name: str = "DataType"
+    _values: Dict[str, str] = {
+        "index": "Used for tracking other items in the library.",
+        "metadata": "Filling data associated with an Artwork.",
+        "media": "The actual artwork file, itself.",
+    }
 
     @property
     def sections(self) -> Iterable[Section]:
@@ -25,7 +29,7 @@ class BasicType:
                 Section(
                     name=self._name.lower(),
                     description=self.__doc__,
-                    values=self._values,
+                    values=list(self._values.keys()),
                 )
             ]
         )
@@ -42,7 +46,7 @@ class BasicType:
         )
 
         self._plane: Plane = Plane(
-            name=BasicType._name.upper(),
+            name=DataType._name.upper(),
             description=self.__doc__,
             blocks=self._blocks,
         )
@@ -58,66 +62,55 @@ class BasicType:
         return self._plane
 
 
-class Purpose:
-    """The Basic Purpose of Media Item File"""
+class Way:
+    """The way of a Artwork: Unmodified to Adapted and Changed"""
 
-    _name: str = "Purpose"
+    _name: str = "Way"
+    _values: Dict[str, str] = {
+        "gold": "Original Processed Artwork from Artists",
+        "alternative": "Modified or Transformed version of a Gold Artwork",
+        "base": "Processed Artwork for Public Use",
+        "variant": "Modified or Transformed Processed Artwork for Public Use",
+    }
 
-    class Purposes:
-        """The Purposes connected to a Media File"""
-
-        _name: str = "Purposes"
-
-        _sections: Dict[str, str] = {
-            "gold": "Original Processed Artwork from Artists",
-            "alternative": "Modified or Transformed version of a Gold Artwork",
-            "base": "Processed Artwork for Public Use",
-            "variant": "Modified or Transformed Processed Artwork for Public Use",
-        }
-
-        _values: List[str] = ["index", "metadata", "media"]
-
-        @property
-        def sections(self) -> Iterable[Section]:
-            """Returns a list of sections for each purpose type:
-
-            index, metadata, and media types."""
-
-            section_items: Tuple[str, str]
-            sections: List[Section] = []
-
-            for section_items in self._sections.items():
-                sections.append(
-                    Section(
-                        name=section_items[0],
-                        description=section_items[1],
-                        values=self._values,
-                    )
+    @property
+    def sections(self) -> Iterable[Section]:
+        """Way Sections: Gold, Alternative, Base, and Variant"""
+        return list(
+            [
+                Section(
+                    name=self._name.lower(),
+                    description=self.__doc__,
+                    values=list(self._values.keys()),
                 )
-
-            return sections
-
-        @property
-        def block(self) -> Block:
-            """Returns a newly built Block Class containing the Purpose Sections."""
-            return Block(
-                name=self._name, description=self.__doc__, sections=self.sections
-            )
+            ]
+        )
 
     def __init__(self) -> None:
-        self._blocks: list[Block] = list([Purpose.Purposes().block])
+        self._blocks: list[Block] = list(
+            [
+                Block(
+                    name=self._name,
+                    description=self.__doc__,
+                    sections=self.sections,
+                )
+            ]
+        )
+
         self._plane: Plane = Plane(
-            name=Purpose._name.upper(), description=self.__doc__, blocks=self._blocks
+            name=Way._name.upper(),
+            description=self.__doc__,
+            blocks=self._blocks,
         )
 
     @property
-    def get_blocks(self) -> list[Block]:
-        """Return a list of Block Data Classes"""
+    def get_blocks(self) -> Iterable[Block]:
+        """Returns a Block containing the Basic Section"""
         return self._blocks
 
     @property
     def get_plane(self) -> Plane:
-        """Returns the Plane Data Class"""
+        """Returns a Plane containing the Basic Block, Section"""
         return self._plane
 
 
@@ -186,7 +179,7 @@ class Listing:
         )
 
         self._plane: Plane = Plane(
-            name=Purpose._name.upper(), description=self.__doc__, blocks=self._blocks
+            name=Way._name.upper(), description=self.__doc__, blocks=self._blocks
         )
 
     @property
