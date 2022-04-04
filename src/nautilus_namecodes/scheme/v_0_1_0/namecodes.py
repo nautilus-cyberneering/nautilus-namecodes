@@ -1,6 +1,7 @@
 """Generate Namecodes from Values"""
 
-from typing import List
+from abc import ABC, abstractmethod
+from typing import Dict, Iterable, List, Tuple
 
 from nautilus_namecodes.namecodes_dataclasses import (
     AllCodes,
@@ -14,15 +15,25 @@ from nautilus_namecodes.namecodes_dataclasses import (
     TreeStub,
 )
 from nautilus_namecodes.scheme.v_0_1_0.namecode_values import (
-    BasicType,
+    DataType,
+    Listing,
     Modifications,
-    Purpose,
+    Way,
 )
 
 __scheme_version__ = "v.0.1.0"
 
 
-class BaseNameCodes(BasicType):
+class PlaneCode(ABC):
+    """Plane Code Abstract Class"""
+
+    @property
+    @abstractmethod
+    def get_plane_codes(self) -> PlaneCodes:
+        """Returns the Plane Codes Property"""
+
+
+class DataTypeNameCodes(PlaneCode, DataType):
     """Generate the Plane Codes for the BasicType"""
 
     def __init__(self) -> None:
@@ -37,7 +48,7 @@ class BaseNameCodes(BasicType):
         return self._planecodes
 
 
-class PurposeNameCodes(Purpose):
+class WayNameCodes(PlaneCode, Way):
     """Generate the Plane Codes for the Purpose"""
 
     def __init__(self) -> None:
@@ -52,7 +63,22 @@ class PurposeNameCodes(Purpose):
         return self._planecodes
 
 
-class ModificationsNameCodes(Modifications):
+class ListingNameCodes(PlaneCode, Listing):
+    """Generate the Plane Codes for the Purpose"""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._start: int = 0x100
+        self._planecodes: PlaneCodes = self.get_plane.get_plane_codes(self._start)
+
+    @property
+    def get_plane_codes(self) -> PlaneCodes:
+        """Returns the Plane Codes Property"""
+        return self._planecodes
+
+
+class ModificationsNameCodes(PlaneCode, Modifications):
     """Generate the Plane Codes for the Modifications"""
 
     def __init__(self) -> None:
@@ -73,17 +99,20 @@ class AllNameCodes:
     def __init__(self) -> None:
         self._name: str = "Nautilus Namecodes"
 
-        self._planecodes: list[PlaneCodes] = list(
-            [
-                BaseNameCodes().get_plane_codes,
-                PurposeNameCodes().get_plane_codes,
-                ModificationsNameCodes().get_plane_codes,
-            ]
-        )
+        planes: Iterable[PlaneCode] = [
+            DataTypeNameCodes(),
+            WayNameCodes(),
+            ListingNameCodes(),
+            ModificationsNameCodes(),
+        ]
 
-        self._planecodes.sort(
-            key=lambda planecode: planecode.codepoints_allocated.start
-        )
+        self._planecodes: Dict[str, PlaneCodes] = {}
+
+        for plane in planes:
+            self._planecodes |= {plane.get_plane_codes.name: plane.get_plane_codes}
+
+        # Todo: sort Ordered Dict by value.codepoints_allocated.start.
+        # self._planecodes.sort(key=lambda planecode: planecode.codepoints_allocated.start)
 
         self._allcodes: AllCodes = AllCodes(  # pylint: disable=no-value-for-parameter
             name=self._name,
@@ -100,7 +129,9 @@ class AllNameCodes:
 
     def get_all_codepoints_allocated(self) -> list[Range]:
         """Get List of Codepoints Allocated"""
-        return [planecode.codepoints_allocated for planecode in self._planecodes]
+        return [
+            planecode.codepoints_allocated for planecode in self._planecodes.values()
+        ]
 
     def get_codepoints_allocated(self) -> Range:
         """Get the Full Range of Namecode Codepoints"""
@@ -123,28 +154,28 @@ class TreeStubGen:  # pylint: disable="too-few-public-methods"
         _plane_branches: List[PlaneBranch] = []
 
         plane: PlaneCodes
-        for plane in _all_name_codes.planes:
+        for plane in _all_name_codes.planes.values():
 
             _block_branches: List[BlockBranch] = []
-            block: BlockCodes
-            for block in plane.blocks:
+            block: Tuple[str, BlockCodes]
+            for block in plane.blocks.items():
 
                 _section_stubs: List[SectionStub] = []
-                section: SectionCodes
-                for section in block.sections:
+                section: Tuple[str, SectionCodes]
+                for section in block[1].sections.items():
                     _section_stubs.append(
                         SectionStub(
-                            name=section.name,
-                            description=section.description,
-                            codepoints_allocated=section.codepoints_allocated,
+                            name=section[1].name,
+                            description=section[1].description,
+                            codepoints_allocated=section[1].codepoints_allocated,
                         )
                     )
 
                 _block_branches.append(
                     BlockBranch(
-                        name=block.name,
-                        description=block.description,
-                        codepoints_allocated=block.codepoints_allocated,
+                        name=block[1].name,
+                        description=block[1].description,
+                        codepoints_allocated=block[1].codepoints_allocated,
                         section_stubs=_section_stubs,
                     )
                 )
