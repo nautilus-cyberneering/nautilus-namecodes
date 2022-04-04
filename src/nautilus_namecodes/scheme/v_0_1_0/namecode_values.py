@@ -117,6 +117,8 @@ class Way:
 class Listing:
     """Media Items Listed for New Editions or Revisions"""
 
+    _name: str = "Listing"
+
     class Editions:
         """Media Files may have Many Editions"""
 
@@ -179,7 +181,7 @@ class Listing:
         )
 
         self._plane: Plane = Plane(
-            name=Way._name.upper(), description=self.__doc__, blocks=self._blocks
+            name=Listing._name.upper(), description=self.__doc__, blocks=self._blocks
         )
 
     @property

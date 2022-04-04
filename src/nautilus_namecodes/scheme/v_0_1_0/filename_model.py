@@ -1,7 +1,7 @@
 """Dataclass for the Data Encoded into a Namecode Filename"""
 
+from pydantic import BaseModel
 from pydantic.fields import Field  # pylint: disable="no-name-in-module"
-from pydantic.main import BaseModel
 
 from nautilus_namecodes.scheme.v_0_1_0.filename import (
     Filename,

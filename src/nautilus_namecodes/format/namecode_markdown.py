@@ -40,11 +40,11 @@ class MarkdownOutput:
 
         blocks_list: List[Element] = []
 
-        planes: Iterable[PlaneCodes] = self.all_name_codes.planes
+        planes: Iterable[PlaneCodes] = self.all_name_codes.planes.values()
         plane: PlaneCodes
 
         for plane in planes:
-            blocks: Iterable[BlockCodes] = plane.blocks
+            blocks: Iterable[BlockCodes] = plane.blocks.values()
             block: BlockCodes
 
             for block in blocks:
@@ -57,15 +57,15 @@ class MarkdownOutput:
 
         sections_list: List[Element] = []
 
-        planes: Iterable[PlaneCodes] = self.all_name_codes.planes
+        planes: Iterable[PlaneCodes] = self.all_name_codes.planes.values()
         plane: PlaneCodes
 
         for plane in planes:
-            blocks: Iterable[BlockCodes] = plane.blocks
+            blocks: Iterable[BlockCodes] = plane.blocks.values()
             block: BlockCodes
 
             for block in blocks:
-                sections: Iterable[SectionCodes] = block.sections
+                sections: Iterable[SectionCodes] = block.sections.values()
                 section: SectionCodes
 
                 for section in sections:
@@ -84,9 +84,9 @@ class MarkdownOutput:
         output += f" ((({self.all_name_codes.gen_output_range()})))\n"
 
         plane: PlaneCodes
-        plane_last: PlaneCodes = self.all_name_codes.planes[-1]
+        plane_last: PlaneCodes = list(*self.all_name_codes.planes.values())[-1]
 
-        for plane in self.all_name_codes.planes:
+        for plane in self.all_name_codes.planes.values():
 
             plane_joiner: str = ("├──", "└──")[plane == plane_last]
             block_spacer: str = ("│   ", "    ")[plane == plane_last]
@@ -95,9 +95,9 @@ class MarkdownOutput:
             output += f" (({plane.gen_output_range()}))\n"
 
             block: BlockCodes
-            block_last: BlockCodes = plane.blocks[-1]
+            block_last: BlockCodes = list(*plane.blocks.values())[-1]
 
-            for block in plane.blocks:
+            for block in plane.blocks.values():
 
                 block_joiner: str = (f"{block_spacer}├──", f"{block_spacer}└──")[
                     block == block_last
@@ -110,9 +110,9 @@ class MarkdownOutput:
                 output += f" ({block.gen_output_range()})\n"
 
                 section: SectionCodes
-                section_last: SectionCodes = block.sections[-1]
+                section_last: SectionCodes = list(*block.sections.values())[-1]
 
-                for section in block.sections:
+                for section in block.sections.values():
 
                     section_joiner: str = (
                         f"{section_spacer}├──",
@@ -145,9 +145,9 @@ class MarkdownOutput:
 
         codes_data: List[Iterable[InlineText]] = []
 
-        sections: Iterable[SectionCodes] = block.sections
+        sections: Iterable[SectionCodes] = block.sections.values()
         section: SectionCodes
-        section_last: SectionCodes = block.sections[-1]
+        section_last: SectionCodes = list(*block.sections.values())[-1]
 
         for section in sections:
             codes_data.append(
@@ -155,7 +155,7 @@ class MarkdownOutput:
             )
 
             section_items: Tuple[int, str]
-            for section_items in section.codes.items():
+            for section_items in section.codes.values():
 
                 code = InlineText(f"0x{section_items[0]:=04X}")
                 name = InlineText(section_items[1])
@@ -191,7 +191,7 @@ class MarkdownOutput:
 
         section_items: Tuple[int, str]
 
-        for section_items in section.codes.items():
+        for section_items in section.codes.values():
 
             code = InlineText(f"0x{section_items[0]:=04X}")
             name = InlineText(section_items[1])

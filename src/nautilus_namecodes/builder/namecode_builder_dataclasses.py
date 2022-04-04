@@ -132,13 +132,16 @@ class Block(CommonValues, CommonMethods):
             zip(self.sections, _section_offsets)
         )
 
-        _section_codes_list: List[Tuple[str, BlockCodes]] = []
+        _section_codes_list: List[Tuple[str, SectionCodes]] = []
 
         for section_and_offset in _sections_and_offsets:
             sectioncode: SectionCodes = section_and_offset[0].get_section_codes(
                 starting_codepoint + section_and_offset[1] * ConstantValues.page_size
             )
-            _section_codes_tuple: Tuple[str, BlockCodes] = sectioncode.name, sectioncode
+            _section_codes_tuple: Tuple[str, SectionCodes] = (
+                sectioncode.name,
+                sectioncode,
+            )
             _section_codes_list.append(_section_codes_tuple)
 
         _section_codes: OrderedDict = OrderedDict(_section_codes_list)

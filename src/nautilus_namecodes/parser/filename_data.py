@@ -1,8 +1,7 @@
 """Encode and Decode a Filename"""
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
-import pydantic
 from nautilus_namecodes.namecodes_dataclasses import AllCodes
 from nautilus_namecodes.scheme.v_0_1_0.filename import (
     Base,
@@ -13,8 +12,9 @@ from nautilus_namecodes.scheme.v_0_1_0.filename import (
     Filename,
     Gold,
     GoldAlternative,
-    ItemCode,
-    LibraryCode,
+    ItemNumber,
+    LibraryEntry,
+    LibraryName,
     Listing,
     Modification,
     Modifications,
@@ -42,13 +42,14 @@ base: Optional[Base]
 
 info: Gold
 listing: Listing
-item: ItemCode
-library: LibraryCode
+item: ItemNumber
+library: LibraryName
+library_entry: LibraryEntry
 
 filename: Filename
 
-
-modifications: Modifications = Modifications(
+## Note, type is ignored because of pydantic bug.
+modifications: Modifications = Modifications(  # type: ignore
     [
         Modification("Adaption", "focus", "background"),
         Modification("Adaption", "prospective", "bottom"),
@@ -72,18 +73,28 @@ info_alt = Gold(alternative)
 info_base = Gold(base_mod)
 info_gold = Gold("gold")
 
+
 listing = Listing(0x001, 0x001)
 
-item = ItemCode(0x001)
+item = ItemNumber(0x001)
 
-library = LibraryCode("aaa")
+library = LibraryName("aaa")
+data_type: DataType = DataType("index")
 
-filename = Filename(library, item, listing, info_base, DataType("index"))
+library_entry = LibraryEntry(library, item)
 
+filename = Filename(library_entry, listing, info_base, data_type)
+
+print(library_entry.get_formated_entry_string())
+print(listing.get_codes(all_codes))
+print(info_base.get_codes_r(all_codes))
+print(data_type.get_codes(all_codes))
+
+print(filename.get_filename(all_codes))
 
 model: NautilusNamecodesFilenameBaseModel = NautilusNamecodesFilenameBaseModel(
     encoding=filename
 )
 
-print(model.schema_json())
+# print(model.schema_json())
 print(model.json())

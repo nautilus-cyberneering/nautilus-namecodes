@@ -1,6 +1,7 @@
 """Generate Namecodes from Values"""
 
-from typing import Dict, List, OrderedDict, Tuple
+from abc import ABC, abstractmethod
+from typing import Dict, Iterable, List, Tuple
 
 from nautilus_namecodes.namecodes_dataclasses import (
     AllCodes,
@@ -23,7 +24,16 @@ from nautilus_namecodes.scheme.v_0_1_0.namecode_values import (
 __scheme_version__ = "v.0.1.0"
 
 
-class DataTypeNameCodes(DataType):
+class PlaneCode(ABC):
+    """Plane Code Abstract Class"""
+
+    @property
+    @abstractmethod
+    def get_plane_codes(self) -> PlaneCodes:
+        """Returns the Plane Codes Property"""
+
+
+class DataTypeNameCodes(PlaneCode, DataType):
     """Generate the Plane Codes for the BasicType"""
 
     def __init__(self) -> None:
@@ -38,7 +48,7 @@ class DataTypeNameCodes(DataType):
         return self._planecodes
 
 
-class WayNameCodes(Way):
+class WayNameCodes(PlaneCode, Way):
     """Generate the Plane Codes for the Purpose"""
 
     def __init__(self) -> None:
@@ -53,13 +63,13 @@ class WayNameCodes(Way):
         return self._planecodes
 
 
-class ListingNameCodes(Listing):
+class ListingNameCodes(PlaneCode, Listing):
     """Generate the Plane Codes for the Purpose"""
 
     def __init__(self) -> None:
         super().__init__()
 
-        self._start: int = 0x600
+        self._start: int = 0x100
         self._planecodes: PlaneCodes = self.get_plane.get_plane_codes(self._start)
 
     @property
@@ -68,13 +78,13 @@ class ListingNameCodes(Listing):
         return self._planecodes
 
 
-class ModificationsNameCodes(Modifications):
+class ModificationsNameCodes(PlaneCode, Modifications):
     """Generate the Plane Codes for the Modifications"""
 
     def __init__(self) -> None:
         super().__init__()
 
-        self._start: int = 0x800
+        self._start: int = 0x600
         self._planecodes: PlaneCodes = self.get_plane().get_plane_codes(self._start)
 
     @property
@@ -89,14 +99,17 @@ class AllNameCodes:
     def __init__(self) -> None:
         self._name: str = "Nautilus Namecodes"
 
-        self._planecodes: OrderedDict[str, PlaneCodes] = OrderedDict(
-            {
-                "Base": DataTypeNameCodes().get_plane_codes,
-                "Purpose": WayNameCodes().get_plane_codes,
-                "Listing": ListingNameCodes().get_plane_codes,
-                "Modifications": ModificationsNameCodes().get_plane_codes,
-            }
-        )
+        planes: Iterable[PlaneCode] = [
+            DataTypeNameCodes(),
+            WayNameCodes(),
+            ListingNameCodes(),
+            ModificationsNameCodes(),
+        ]
+
+        self._planecodes: Dict[str, PlaneCodes] = {}
+
+        for plane in planes:
+            self._planecodes |= {plane.get_plane_codes.name: plane.get_plane_codes}
 
         # Todo: sort Ordered Dict by value.codepoints_allocated.start.
         # self._planecodes.sort(key=lambda planecode: planecode.codepoints_allocated.start)
