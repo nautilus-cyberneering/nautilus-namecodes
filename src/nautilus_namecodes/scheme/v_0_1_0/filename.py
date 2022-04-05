@@ -294,6 +294,22 @@ class Gold(Way):
 
 
 @dataclass
+class Extention:
+    """Filename Extention"""
+
+    extention: str = pydantic.Field(
+        None,
+        title="File Extention",
+        min_length=1,
+        regex=r"\A[^\s\t\n\r\f\v\b\0\\\/\"\<\>\|\:\*\?]+\Z",
+    )
+
+    def get_string(self) -> str:
+        """Simple String Getter"""
+        return self.extention
+
+
+@dataclass
 class Filename:
     """The Data that is encoded into a Filename."""
 
@@ -301,6 +317,7 @@ class Filename:
     listing: Listing
     gold: Gold
     type: DataType
+    extention: Extention
 
     def get_filename(self, all_codes: AllCodes) -> str:
         """Return the encoded filename."""
@@ -317,4 +334,6 @@ class Filename:
             f"{'.'.join(map(str,list(zip(*modification_codes))[0]))}"
             "."
             f"{'.'.join(map(str,list(zip(*type_code))[0]))}"
+            "."
+            f"{self.extention.get_string()}"
         )
