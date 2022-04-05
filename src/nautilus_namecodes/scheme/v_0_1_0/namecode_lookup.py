@@ -19,7 +19,9 @@ class NamecodeLookup:
     plane: str = field(init=False)
     block: str = field(init=False)
     section: str = field(init=False)
-    code: str = field(init=False)
+    codename: str = field(init=False)
+
+    code: Tuple[int, str] = field(init=False)
 
     def __post_init__(self, all_codes: AllCodes):
 
@@ -35,4 +37,5 @@ class NamecodeLookup:
         code: Tuple[str, Tuple[int, str]] = section_codes.lookup_by_namecode(
             self.namecode
         )
-        self.code = code[0]
+        self.codename = code[0]
+        self.code = code[1]

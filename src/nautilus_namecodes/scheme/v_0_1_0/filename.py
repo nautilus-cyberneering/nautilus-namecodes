@@ -2,10 +2,9 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import re
 
 # from pydantic.dataclasses import dataclass
-from typing import Deque, List, Literal, Optional, Tuple, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 import pydantic
 
@@ -28,6 +27,7 @@ class LibraryName:
     library_code: str = pydantic.Field(
         None,
         title="Global Library Code",
+        description="Three letter code, all lowercase or all uppercase.",
         min_length=3,
         max_length=3,
         regex=r"^[a-z]{3}|[A-Z]{3}\Z",
@@ -160,14 +160,14 @@ class Modifications(Codes):
 class DataType(Codes):
     """The Type used in the Library"""
 
-    basic_type: Union[Literal["index"], Literal["metadata"], Literal["media"]]
+    basic_type: Union[Literal["Index"], Literal["Metadata"], Literal["Media"]]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [
             all_codes.planes["DATATYPE"]
             .blocks["DataType"]
             .sections["datatype"]
-            .codes[f"{self.basic_type}"]
+            .codes[f"{self.basic_type.lower()}"]
         ]
 
 
@@ -175,7 +175,7 @@ class DataType(Codes):
 class BaseVariant(Way):
     """Modified Base from Unmodified Gold"""
 
-    way = "variant"
+    way = "base_variant"
 
     modifications: Modifications
 
@@ -192,26 +192,26 @@ class Base(Way):
 
     way = "base"
 
-    base_or_vairant: Union[Literal["base"], BaseVariant]
+    base_or_base_variant: Union[Literal["Base"], BaseVariant]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [self.get_way(all_codes)]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(self.base_or_vairant, BaseVariant):
+        if isinstance(self.base_or_base_variant, BaseVariant):
             return [
-                *self.base_or_vairant.get_codes_r(all_codes),
+                *self.base_or_base_variant.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
         return self.get_codes(all_codes)
 
 
 @dataclass
-class BaseAlternativeVairant(Way):
+class BaseAlternativeVariant(Way):
     """ "Modified Base from Alternative Gold"""
 
-    way = "variant"
+    way = "base_alternative_variant"
 
     modifications: Modifications
 
@@ -226,10 +226,10 @@ class BaseAlternativeVairant(Way):
 class BaseAlternative(Way):
     """Unmodified Base from Alternative Gold"""
 
-    way = "base"
+    way = "base_alternative"
 
-    base_alternative_or_vairant: Union[
-        Literal["base-alternative"], BaseAlternativeVairant
+    base_alternative_or_base_alternative_variant: Union[
+        Literal["BaseAlternative"], BaseAlternativeVariant
     ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
@@ -237,9 +237,13 @@ class BaseAlternative(Way):
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(self.base_alternative_or_vairant, BaseAlternativeVairant):
+        if isinstance(
+            self.base_alternative_or_base_alternative_variant, BaseAlternativeVariant
+        ):
             return [
-                *self.base_alternative_or_vairant.get_codes_r(all_codes),
+                *self.base_alternative_or_base_alternative_variant.get_codes_r(
+                    all_codes
+                ),
                 *self.get_codes(all_codes),
             ]
         return self.get_codes(all_codes)
@@ -249,19 +253,22 @@ class BaseAlternative(Way):
 class GoldAlternative(Way):
     """Alternative Gold"""
 
-    way = "alternative"
+    way = "gold_alternative"
 
     modifications: Modifications
-    gold_or_base_alternative: Union[Literal["alternative"], BaseAlternative]
+
+    gold_alternative_or_base_alternative: Union[
+        Literal["GoldAlternative"], BaseAlternative
+    ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [*self.modifications.get_codes(all_codes), self.get_way(all_codes)]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(self.gold_or_base_alternative, BaseAlternative):
+        if isinstance(self.gold_alternative_or_base_alternative, BaseAlternative):
             return [
-                *self.gold_or_base_alternative.get_codes_r(all_codes),
+                *self.gold_alternative_or_base_alternative.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
         return self.get_codes(all_codes)
@@ -273,21 +280,21 @@ class Gold(Way):
 
     way = "gold"
 
-    gold_or_alternative_or_base: Union[Literal["gold"], GoldAlternative, Base]
+    gold_or_gold_alternative_or_base: Union[Literal["Gold"], GoldAlternative, Base]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [self.get_way(all_codes)]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(self.gold_or_alternative_or_base, GoldAlternative):
+        if isinstance(self.gold_or_gold_alternative_or_base, GoldAlternative):
             return [
-                *self.gold_or_alternative_or_base.get_codes_r(all_codes),
+                *self.gold_or_gold_alternative_or_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
-        if isinstance(self.gold_or_alternative_or_base, Base):
+        if isinstance(self.gold_or_gold_alternative_or_base, Base):
             return [
-                *self.gold_or_alternative_or_base.get_codes_r(all_codes),
+                *self.gold_or_gold_alternative_or_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
         return self.get_codes(all_codes)
@@ -300,8 +307,12 @@ class Extention:
     extention: str = pydantic.Field(
         None,
         title="File Extention",
+        description=(
+            "Any unicode character, except for: controll characters,"
+            "null, slashes, pipe, whitespace, double periods, asterisk, question mark, and dash."
+        ),
         min_length=1,
-        regex=r"\A[^\s\t\n\r\f\v\b\0\\\/\"\<\>\|\:\*\?]+\Z",
+        regex=r"(?u)\A(?:(?!\.{2,})[^\s\t\n\r\f\v\b\0\\\/\"\<\>\|\:\*\?\-])*\Z",
     )
 
     def get_string(self) -> str:
@@ -316,7 +327,7 @@ class Filename:
     library_entry: LibraryEntry
     listing: Listing
     gold: Gold
-    type: DataType
+    data_type: DataType
     extention: Extention
 
     def get_filename(self, all_codes: AllCodes) -> str:
@@ -324,7 +335,7 @@ class Filename:
 
         listing_codes = self.listing.get_codes(all_codes)
         modification_codes = self.gold.get_codes_r(all_codes)
-        type_code = self.type.get_codes(all_codes)
+        type_code = self.data_type.get_codes(all_codes)
 
         return (
             f"{self.library_entry.get_formated_entry_string()}"
