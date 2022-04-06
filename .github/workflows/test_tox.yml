@@ -36,4 +36,4 @@ jobs:
         run: poetry install --no-root --no-dev
 
       - name: Run Tox
-        run: poetry run tox
+        run: poetry run tox4
