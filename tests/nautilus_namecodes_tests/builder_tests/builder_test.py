@@ -80,9 +80,9 @@ class SectionTestCase(unittest.TestCase):
         self.assertEqual(
             self.section_codes.codes,
             {
-                0x100: "(Test Section) Test",
-                0x101: "(Test Section) One",
-                0x102: "(Test Section) Two",
+                "Test": (256, "(Test Section) Test"),
+                "One": (257, "(Test Section) One"),
+                "Two": (258, "(Test Section) Two"),
             },
         )
 

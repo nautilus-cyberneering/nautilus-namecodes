@@ -6,7 +6,7 @@ import typer
 from typer.main import Typer
 
 from nautilus_namecodes._version import __version__
-from nautilus_namecodes.format.generate_console import ConsoleOutput
+from nautilus_namecodes.format.namecode_console import NamecodesConsoleOutput
 
 app: Typer = typer.Typer()
 
@@ -39,6 +39,24 @@ def version_callback(value: bool) -> None:
 
 output_exclusivity_callback = mutually_exclusive_group(2)
 format_exclusivity_callback = mutually_exclusive_group(3)
+
+
+@app.command()
+def filename(
+    json_schema: bool = typer.Option(
+        None,
+        "--json-schema",
+        help="Output Json Schema",
+        callback=format_exclusivity_callback,
+    )
+) -> None:
+    """Command for the Management of Encoded Filenames"""
+    if json_schema:
+        # typer.echo(FilenameConsoleOutput.generate_json_schema())
+        pass
+
+    if not any([json_schema]):
+        raise typer.BadParameter("Required to specify: --json-schema.")
 
 
 @app.command()
@@ -93,33 +111,33 @@ def codes(  # pylint: disable="too-many-arguments,too-many-branches"
 
     if markdown:
         if show_tree:
-            typer.echo(ConsoleOutput.generate_tree_output())
+            typer.echo(NamecodesConsoleOutput.generate_tree_output())
 
         if show_blocks:
-            typer.echo(ConsoleOutput.generate_blocks_output())
+            typer.echo(NamecodesConsoleOutput.generate_blocks_output())
 
         if show_codes:
-            typer.echo(ConsoleOutput.generate_codes_output())
+            typer.echo(NamecodesConsoleOutput.generate_codes_output())
 
     if json:
         if show_tree:
-            typer.echo(ConsoleOutput.generate_json_tree())
+            typer.echo(NamecodesConsoleOutput.generate_json_tree())
 
         if show_blocks:
-            typer.echo(ConsoleOutput.generate_json())
+            typer.echo(NamecodesConsoleOutput.generate_json())
 
         if show_codes:
-            typer.echo(ConsoleOutput.generate_json_codelist())
+            typer.echo(NamecodesConsoleOutput.generate_json_codelist())
 
     if json_schema:
         if show_tree:
-            typer.echo(ConsoleOutput.generate_json_schema_tree())
+            typer.echo(NamecodesConsoleOutput.generate_json_schema_tree())
 
         if show_blocks:
-            typer.echo(ConsoleOutput.generate_json_schema())
+            typer.echo(NamecodesConsoleOutput.generate_json_schema())
 
         if show_codes:
-            typer.echo(ConsoleOutput.generate_json_schema_codelist())
+            typer.echo(NamecodesConsoleOutput.generate_json_schema_codelist())
 
 
 @app.callback()

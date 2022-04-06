@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Type, TypeVar
+from typing import Dict, List, Optional, Tuple, Type, TypeVar
 
 RangeTypeT = TypeVar("RangeTypeT", bound="Range")
 
@@ -73,56 +73,56 @@ class TreeStub(SectionStub):
 class SectionCodes(SectionStub):
     """Data Class for Generated Section Codes"""
 
-    codes: Dict[int, str]
+    codes: Dict[str, Tuple[int, str]]
 
 
 @dataclass
 class BlockCodes(SectionStub):
     """Data Class for Generated Block Codes"""
 
-    sections: List[SectionCodes]
+    sections: Dict[str, SectionCodes]
     codes: Dict[int, str] = field(init=False)
 
     def __post_init__(self) -> None:
         self.codes = {}
-        for section in self.sections:
+        for section in self.sections.items():
 
             # hack for pydantic
-            if isinstance(section, Mapping):
-                self.codes |= section["codes"]
+            if isinstance(section[1], Mapping):
+                self.codes |= dict(section[1]["codes"].values())
             else:
-                self.codes |= section.codes
+                self.codes |= dict(section[1].codes.values())
 
 
 @dataclass
 class PlaneCodes(SectionStub):
     """Data Class for Generated Plane Codes"""
 
-    blocks: List[BlockCodes]
+    blocks: Dict[str, BlockCodes]
     codes: Dict[int, str] = field(init=False)
 
     def __post_init__(self) -> None:
         self.codes = {}
-        for block in self.blocks:
+        for block in self.blocks.items():
 
             # hack for pydantic
-            if isinstance(block, Mapping):
-                self.codes |= block["codes"]
+            if isinstance(block[1], Mapping):
+                self.codes |= block[1]["codes"]
             else:
-                self.codes |= block.codes
+                self.codes |= block[1].codes
 
 
 @dataclass
 class AllCodes(SectionStub):
     """Data Class for all the Generated Namecodes"""
 
-    planes: List[PlaneCodes]
+    planes: Dict[str, PlaneCodes]
     codes: Dict[int, str] = field(init=False)
     scheme_version: str
 
     def __post_init__(self) -> None:
         self.codes = {}
-        for plane in self.planes:
+        for plane in self.planes.values():
 
             # hack for pydantic
             if isinstance(plane, Mapping):
