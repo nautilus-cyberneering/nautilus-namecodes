@@ -75,6 +75,17 @@ class SectionCodes(SectionStub):
 
     codes: Dict[str, Tuple[int, str]]
 
+    def lookup_by_namecode(self, namecode: int) -> Tuple[str, Tuple[int, str]]:
+        """Returns Appropriate Section according to namecode."""
+
+        for code in self.codes.items():
+            if namecode == code[1][0]:
+                return code
+
+        raise IndexError(
+            f'"{namecode}" is not a code within the "{self.name} section".'
+        )
+
 
 @dataclass
 class BlockCodes(SectionStub):
@@ -92,6 +103,15 @@ class BlockCodes(SectionStub):
                 self.codes |= dict(section[1]["codes"].values())
             else:
                 self.codes |= dict(section[1].codes.values())
+
+    def lookup_section_by_code(self, code: int) -> SectionCodes:
+        """Returns Appropriate Section according to namecode."""
+
+        for section in self.sections.items():
+            if code in section[1].codepoints_allocated.range:
+                return section[1]
+
+        raise IndexError(f'"{code}" not in any block within the "{self.name} block".')
 
 
 @dataclass
@@ -111,6 +131,15 @@ class PlaneCodes(SectionStub):
             else:
                 self.codes |= block[1].codes
 
+    def lookup_block_by_code(self, code: int) -> BlockCodes:
+        """Returns Appropriate Block according to namecode."""
+
+        for block in self.blocks.items():
+            if code in block[1].codepoints_allocated.range:
+                return block[1]
+
+        raise IndexError(f'"{code}" not in any block within the "{self.name} plane".')
+
 
 @dataclass
 class AllCodes(SectionStub):
@@ -129,3 +158,12 @@ class AllCodes(SectionStub):
                 self.codes |= plane["codes"]
             else:
                 self.codes |= plane.codes
+
+    def lookup_plane_by_code(self, code: int) -> PlaneCodes:
+        """Returns Appropriate Plane according to namecode."""
+
+        for plane in self.planes.items():
+            if code in plane[1].codepoints_allocated.range:
+                return plane[1]
+
+        raise IndexError(f'"{code}" not in any plane.')

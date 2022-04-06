@@ -79,5 +79,8 @@ skips = ["B101"]
 [tool.pylint.master]
 ignore-paths="^.*contrib/snakemd.*py$"
 
+[tool.pylint."MESSAGES CONTROL"]
+disable=["R0801"]
+
 [tool.pylint.FORMAT]
 max-line-length=120

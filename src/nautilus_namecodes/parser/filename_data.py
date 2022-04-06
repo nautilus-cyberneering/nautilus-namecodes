@@ -1,4 +1,4 @@
-"""Encode a Filename"""
+"""Encode and Decode a Filename"""
 
 from typing import List, Optional
 
@@ -9,6 +9,7 @@ from nautilus_namecodes.scheme.v_0_1_0.filename import (
     BaseAlternativeVairant,
     BaseVariant,
     DataType,
+    Extention,
     Filename,
     Gold,
     GoldAlternative,
@@ -22,6 +23,7 @@ from nautilus_namecodes.scheme.v_0_1_0.filename import (
 from nautilus_namecodes.scheme.v_0_1_0.filename_model import (
     NautilusNamecodesFilenameBaseModel,
 )
+from nautilus_namecodes.scheme.v_0_1_0.namecode_lookup import NamecodeLookup
 from nautilus_namecodes.scheme.v_0_1_0.namecode_model import NautilusNamecodesModel
 from nautilus_namecodes.scheme.v_0_1_0.namecodes import AllNameCodes
 
@@ -41,6 +43,7 @@ listing: Listing
 item: ItemNumber
 library: LibraryName
 library_entry: LibraryEntry
+extention: Extention
 
 filename: Filename
 
@@ -76,14 +79,17 @@ data_type: DataType = DataType("index")
 
 library_entry = LibraryEntry(library, item)
 
-filename = Filename(library_entry, listing, info_base, data_type)
+extention = Extention("test.wonderful")
+
+filename = Filename(library_entry, listing, info_base, data_type, extention)
 
 print(library_entry.get_formatted_entry_string())
 print(listing.get_codes(all_codes))
 print(info_base.get_codes_r(all_codes))
 print(data_type.get_codes(all_codes))
 
-print(filename.get_filename(all_codes))
+filename_test: str = filename.get_filename(all_codes)
+print(filename_test)
 
 model: NautilusNamecodesFilenameBaseModel = NautilusNamecodesFilenameBaseModel(
     encoding=filename
@@ -92,6 +98,35 @@ model: NautilusNamecodesFilenameBaseModel = NautilusNamecodesFilenameBaseModel(
 # print(model.schema_json())
 print(model.json())
 
-filename_test: str = "aaa100001-256.512.1552.1590.51.50.48.0"
 
 filename_test_split: List[str] = filename_test.split("-")
+
+filename_codes_split: List[str] = filename_test_split[1].split(".")
+
+print(filename_codes_split)
+
+edition_code = filename_codes_split[0]
+
+# print(all_codes.codes)
+
+lookups: List[NamecodeLookup] = []
+extention2: Extention
+
+extentions: List[str] = []
+
+ext_part: bool = False
+for namecode in filename_codes_split:
+    if ext_part is False:
+        lookups.append(NamecodeLookup(all_codes, int(namecode)))
+        if lookups[-1].plane == "DATATYPE":
+            ext_part = True  # pylint: disable="invalid-name"
+
+    else:
+        extentions.append(namecode)
+
+
+extention2 = Extention(".".join(extentions))
+print(extention2)
+
+for lookup in lookups:
+    print(lookup)
