@@ -1,4 +1,3 @@
-
 ```{toctree}
 :hidden:
 :caption: api
@@ -6,12 +5,11 @@ public/index.md
 internal/index.md
 ```
 
+```{include} ../../README.md
 
-```{include} readme.md
 ```
 
 ## License: AGPL 3.0:
-
 
 ```{toctree}
 ---
@@ -28,4 +26,3 @@ license.md
 * :ref:`modindex`
 * :ref:`search`
 ```
-
