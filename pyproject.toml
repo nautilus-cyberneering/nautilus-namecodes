@@ -30,16 +30,16 @@ nautilus-namecodes = "nautilus_namecodes.main:app"
 [tool.poetry.dependencies]
 python = "^3.9"
 # until poetry has full support for supports optional dependencies, we install tox here.
-tox = "^3.24.4"
+tox = "^4.0.0b1"
 atoml = "^1.1.0"
 typer = {version = "^0.4.0", extras = ["all"]}
-pydantic = "^1.8.2"
+pydantic = "~1.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pytest-cov = "^3.0.0"
 pytest-srcpaths = "^1.2.1"
-black = "^21.10b0"
+black = "^22"
 mypy = "^0.910"
 pylint = "^2.11.1"
 bandit = "^1.7.0"
