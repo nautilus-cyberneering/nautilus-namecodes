@@ -34,6 +34,7 @@ tox = "^4.0.0b1"
 atoml = "^1.1.0"
 typer = {version = "^0.4.0", extras = ["all"]}
 pydantic = "~1.8.2"
+typing-extensions = "^4.1.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
