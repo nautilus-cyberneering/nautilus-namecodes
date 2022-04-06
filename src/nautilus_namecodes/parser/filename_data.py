@@ -1,6 +1,6 @@
 """Encode and Decode a Filename"""
 
-from typing import Dict, List, Literal, Tuple, Union
+from typing import Dict, List, Literal, Tuple
 
 from nautilus_namecodes.namecodes_dataclasses import AllCodes
 from nautilus_namecodes.scheme.v_0_1_0.filename import (
@@ -19,46 +19,49 @@ from nautilus_namecodes.scheme.v_0_1_0.filename import (
     Listing,
     Modification,
     Modifications,
+    Way,
+    WayPaths,
+    Ways,
+    mk_modifications,
 )
 from nautilus_namecodes.scheme.v_0_1_0.filename_model import (
     NautilusNamecodesFilenameBaseModel,
 )
 from nautilus_namecodes.scheme.v_0_1_0.namecode_lookup import NamecodeLookup
-from nautilus_namecodes.scheme.v_0_1_0.namecode_model import NautilusNamecodesModel
 from nautilus_namecodes.scheme.v_0_1_0.namecodes import AllNameCodes
 
 
 class MakeFilenameTest:
     """Creates a Filename"""
 
-    all_codes: AllCodes = NautilusNamecodesModel(data=AllNameCodes().get_all_codes).data
+    all_codes: AllCodes = AllNameCodes().get_all_codes
 
-    gold: Gold = Gold("Gold")
+    gold: Gold = Gold(Ways.GOLD)
 
     ## Note, modifications type is ignored because of pydantic bug.
 
     gold_base_var: Gold = Gold(
         Base(
             BaseVariant(
-                Modifications(  # type: ignore
+                mk_modifications(
                     [
                         Modification("Adaption", "focus", "background"),
                     ]
-                ),
-            )
+                )
+            ),
         )
     )
 
     gold_alt_base_alt_var: Gold = Gold(
         GoldAlternative(
-            Modifications(  # type: ignore
+            mk_modifications(
                 [
                     Modification("Adaption", "focus", "background"),
                 ]
             ),
             BaseAlternative(
                 BaseAlternativeVariant(
-                    Modifications(  # type: ignore
+                    mk_modifications(
                         [
                             Modification("Adaption", "prospective", "bottom"),
                         ]
@@ -112,10 +115,248 @@ class MakeFilenameTest:
         ]
 
 
+class ParseFilename:
+    """Parse an Encoded Filename"""
+
+    ModificationsT = Dict[
+        Literal[
+            Ways.GOLD_ALTERNATIVE, Ways.BASE_ALTERNATIVE_VARIANT, Ways.BASE_VARIANT
+        ],
+        Modifications,
+    ]
+
+    WayPathsModificationsT = Tuple[WayPaths, ModificationsT]
+
+    @staticmethod
+    def find_path_and_extract_modifications(  # pylint: disable="too-many-branches","too-many-statements"
+        all_codes: AllCodes, lookups: List[NamecodeLookup]
+    ) -> WayPathsModificationsT:
+        """Finds the WayPath and Extracts the Modifications"""
+
+        waycode: Dict[Ways, Tuple[int, str]] = {
+            Ways.GOLD: Way.get_way_code(all_codes, Ways.GOLD),
+            Ways.GOLD_ALTERNATIVE: Way.get_way_code(all_codes, Ways.GOLD_ALTERNATIVE),
+            Ways.BASE: Way.get_way_code(all_codes, Ways.BASE),
+            Ways.BASE_ALTERNATIVE: Way.get_way_code(all_codes, Ways.BASE_ALTERNATIVE),
+            Ways.BASE_ALTERNATIVE_VARIANT: Way.get_way_code(
+                all_codes, Ways.BASE_ALTERNATIVE_VARIANT
+            ),
+            Ways.BASE_VARIANT: Way.get_way_code(all_codes, Ways.BASE_VARIANT),
+        }
+
+        waypaths = WayPaths()
+        modifications: ParseFilename.ModificationsT = {}
+
+        # We must start with Gold
+        if lookups[-1].code != waycode[Ways.GOLD]:
+            raise KeyError(lookups[-1])
+
+        while lookups:
+            lookup: NamecodeLookup = lookups.pop(-1)
+
+            modification_lookup: NamecodeLookup
+            modification_list: List[Modification] = []
+
+            ## Gold
+            if lookup.code == waycode[Ways.GOLD]:
+                if not lookups:
+                    waypaths.gold = Ways.GOLD
+                    continue
+
+                if lookups[-1].code == waycode[Ways.GOLD_ALTERNATIVE]:
+                    waypaths.gold = Ways.GOLD_ALTERNATIVE
+                    continue
+
+                if lookups[-1].code == waycode[Ways.BASE]:
+                    waypaths.gold = Ways.BASE
+                    continue
+
+                raise KeyError(
+                    f"After {lookup}, {lookups[-1]} must be Empty, Gold Alternative, or Base."
+                )
+
+            ## Gold Alternative
+            if lookup.code == waycode[Ways.GOLD_ALTERNATIVE]:
+                if not lookups:
+                    raise KeyError(f"Must have at least one modification for {lookup}")
+
+                if lookups[-1].plane != "MODIFICATION":
+                    raise KeyError(
+                        f"next {lookups[-1]} must be a modification for {lookup}"
+                    )
+
+                while lookups:
+                    if lookups[-1].plane != "MODIFICATION":
+                        break
+
+                    modification_lookup = lookups.pop(-1)
+                    modification_list.append(
+                        Modification(
+                            modification_lookup.block,
+                            modification_lookup.section,
+                            modification_lookup.codename,
+                        )
+                    )
+
+                modifications[Ways.GOLD_ALTERNATIVE] = Modifications(modification_list)  # type: ignore
+
+                if not lookups:
+                    waypaths.gold_alternative = Ways.GOLD_ALTERNATIVE
+                    continue
+
+                if lookups[-1].code == waycode[Ways.BASE_ALTERNATIVE]:
+                    waypaths.gold_alternative = Ways.BASE_ALTERNATIVE
+                    continue
+
+                raise KeyError(
+                    f"After {lookup}, {lookups[-1]} must be either Empty, or a Base Alternative."
+                )
+
+            ## Base Alternative
+            if lookup.code == waycode[Ways.BASE_ALTERNATIVE]:
+
+                if not lookups:
+                    waypaths.base_alternative = Ways.BASE_ALTERNATIVE
+                    continue
+
+                if lookups[-1].code == waycode[Ways.BASE_ALTERNATIVE_VARIANT]:
+                    waypaths.base_alternative = Ways.BASE_ALTERNATIVE_VARIANT
+                    continue
+
+                raise KeyError(
+                    f"After {lookup}, {lookups[-1]} must be either Empty, or a Base Alternative Variant."
+                )
+
+            ## Base Alternative Variant
+            if lookup.code == waycode[Ways.BASE_ALTERNATIVE_VARIANT]:
+                if not lookups:
+                    raise KeyError(f"Must have at least one modification for {lookup}")
+
+                if lookups[-1].plane != "MODIFICATION":
+                    raise KeyError(
+                        f"next {lookups[-1]} must be a modification for {lookup}"
+                    )
+
+                while lookups:
+                    if lookups[-1].plane != "MODIFICATION":
+                        break
+
+                    modification_lookup = lookups.pop(-1)
+                    modification_list.append(
+                        Modification(
+                            modification_lookup.block,
+                            modification_lookup.section,
+                            modification_lookup.codename,
+                        )
+                    )
+
+                modifications[Ways.BASE_ALTERNATIVE_VARIANT] = Modifications(modification_list)  # type: ignore
+
+                if not lookups:
+                    continue
+
+                raise KeyError(f"After {lookup}, must be Empty!")
+
+            ## Base
+            if lookup.code == waycode[Ways.BASE]:
+
+                if not lookups:
+                    waypaths.base = Ways.BASE
+                    continue
+
+                if lookups[-1].code == waycode[Ways.BASE_VARIANT]:
+                    waypaths.base = Ways.BASE_VARIANT
+                    continue
+
+                raise KeyError(
+                    f"After {lookup}, {lookups[-1]} must be either Empty, or a Base Variant."
+                )
+
+            ## Base Variant
+            if lookup.code == waycode[Ways.BASE_VARIANT]:
+                if not lookups:
+                    raise KeyError(f"Must have at least one modification for {lookup}")
+
+                if lookups[-1].plane != "MODIFICATION":
+                    raise KeyError(
+                        f"next {lookups[-1]} must be a modification for {lookup}"
+                    )
+
+                while lookups:
+                    if lookups[-1].plane != "MODIFICATION":
+                        break
+
+                    modification_lookup = lookups.pop(-1)
+                    modification_list.append(
+                        Modification(
+                            modification_lookup.block,
+                            modification_lookup.section,
+                            modification_lookup.codename,
+                        )
+                    )
+
+                modifications[Ways.BASE_VARIANT] = Modifications(modification_list)  # type: ignore
+
+                if not lookups:
+                    continue
+
+                raise KeyError(f"After {lookup}, must be Empty!")
+
+            raise KeyError(f"Unknown Key {lookup}!")
+
+        return (waypaths, modifications)
+
+    ## pylint error, python 3.11 prob fixes this.
+    @staticmethod
+    def build_gold_models(  # pylint: disable="inconsistent-return-statements"
+        waypaths_mods: WayPathsModificationsT,
+    ) -> Gold:
+        """Take a WayPaths and Extracted Modifications and Build Gold Models"""
+        waypaths: WayPaths = waypaths_mods[0]
+        modifications: ParseFilename.ModificationsT = waypaths_mods[1]
+
+        if waypaths.gold == Ways.GOLD:
+            return Gold(Ways.GOLD)
+
+        if waypaths.gold == Ways.GOLD_ALTERNATIVE:
+            if waypaths.gold_alternative == Ways.GOLD_ALTERNATIVE:
+                return Gold(
+                    GoldAlternative(
+                        modifications[Ways.GOLD_ALTERNATIVE],
+                        Ways.GOLD_ALTERNATIVE,
+                    )
+                )
+            if waypaths.gold_alternative == Ways.BASE_ALTERNATIVE:
+                if waypaths.base_alternative == Ways.BASE_ALTERNATIVE:
+                    return Gold(
+                        GoldAlternative(
+                            modifications[Ways.GOLD_ALTERNATIVE],
+                            BaseAlternative(Ways.BASE_ALTERNATIVE),
+                        )
+                    )
+                if waypaths.base_alternative == Ways.BASE_ALTERNATIVE_VARIANT:
+                    return Gold(
+                        GoldAlternative(
+                            modifications[Ways.GOLD_ALTERNATIVE],
+                            BaseAlternative(
+                                BaseAlternativeVariant(
+                                    modifications[Ways.BASE_ALTERNATIVE_VARIANT]
+                                ),
+                            ),
+                        )
+                    )
+
+        if waypaths.gold == Ways.BASE:
+            if waypaths.base == Ways.BASE:
+                return Gold(Base(Ways.BASE))
+            if waypaths.base == Ways.BASE_VARIANT:
+                return Gold(Base(BaseVariant(modifications[Ways.BASE_VARIANT])))
+
+
 class ParseFilenameTest:  # pylint: disable=too-few-public-methods
     """Filename to model."""
 
-    all_codes: AllCodes = NautilusNamecodesModel(data=AllNameCodes().get_all_codes).data
+    all_codes: AllCodes = AllNameCodes().get_all_codes
 
     make_filename_test: MakeFilenameTest = MakeFilenameTest()
     test_filenames: List[str] = make_filename_test.get_test_filename_encoded()
@@ -173,9 +414,11 @@ class ParseFilenameTest:  # pylint: disable=too-few-public-methods
         listing: Listing = Listing(listing_edition, listing_revision)
 
         ## Data Type
-        data_types: Dict[
-            str, Union[Literal["Index"], Literal["Metadata"], Literal["Media"]]
-        ] = {"index": "Index", "metadata": "Metadata", "media": "Media"}
+        data_types: Dict[str, Literal["Index", "Metadata", "Media"]] = {
+            "index": "Index",
+            "metadata": "Metadata",
+            "media": "Media",
+        }
 
         data_type_lookup: NamecodeLookup = lookups.pop(-1)
         if data_type_lookup.plane != "DATATYPE":
@@ -185,274 +428,19 @@ class ParseFilenameTest:  # pylint: disable=too-few-public-methods
 
         data_type: DataType = DataType(data_types[data_type_lookup.codename])
 
-        gold_or_gold_alternative_or_base: Union[
-            Literal["Gold"], Literal["GoldAlternative"], Literal["Base"]
-        ]
-        gold_alternative_or_base_alternative: Union[
-            Literal["GoldAlternative"], Literal["BaseAlternative"]
-        ]
-        base_alternative_or_base_alternative_variant: Union[
-            Literal["BaseAlternative"], Literal["BaseAlternativeVariant"]
-        ]
-        base_or_base_variant: Union[Literal["Base"], Literal["BaseVariant"]]
-
-        gold_alternative_modifications: Modifications
-        base_alternative_variant_modifications: Modifications
-        base_variant_modifications: Modifications
-
-        mod_mock: Modifications = Modifications(  # type: ignore
-            [
-                Modification("Adaption", "focus", "background"),
-            ]
+        gold: Gold = ParseFilename.build_gold_models(
+            ParseFilename.find_path_and_extract_modifications(all_codes, lookups)
         )
 
-        gold_way: Tuple[int, str] = Gold("Gold").get_codes(all_codes)[-1]
-        gold_alternative_way = GoldAlternative(mod_mock, "GoldAlternative").get_codes(
-            all_codes
-        )[-1]
-        base_alternative_way = BaseAlternative("BaseAlternative").get_codes(all_codes)[
-            -1
-        ]
-        base_alternative_variant_way = BaseAlternativeVariant(mod_mock).get_codes(
-            all_codes
-        )[-1]
-        base_way = Base("Base").get_codes(all_codes)[-1]
-        base_variant_way = BaseVariant(mod_mock).get_codes(all_codes)[-1]
-
-        # We must start with Gold
-        if gold_way != lookups[-1].code:
-            raise KeyError(lookups[-1])
-
-        while lookups:
-            lookup: NamecodeLookup = lookups.pop(-1)
-
-            modification_lookup: NamecodeLookup
-            modification_list: List[Modification] = []
-
-            ## Gold
-            if lookup.code == gold_way:
-                if not lookups:
-                    gold_or_gold_alternative_or_base = "Gold"
-                    continue
-
-                if lookups[-1].code == gold_alternative_way:
-                    gold_or_gold_alternative_or_base = "GoldAlternative"
-                    continue
-
-                if lookups[-1].code == base_way:
-                    gold_or_gold_alternative_or_base = "Base"
-                    continue
-
-                raise KeyError(
-                    f"After {lookup}, {lookups[-1]} must be Empty, Gold Alternative, or Base."
-                )
-
-            ## Gold Alternative
-            if lookup.code == gold_alternative_way:
-                if not lookups:
-                    raise KeyError(f"Must have at least one modification for {lookup}")
-
-                if lookups[-1].plane != "MODIFICATION":
-                    raise KeyError(
-                        f"next {lookups[-1]} must be a modification for {lookup}"
-                    )
-
-                while lookups:
-                    if lookups[-1].plane != "MODIFICATION":
-                        break
-
-                    modification_lookup = lookups.pop(-1)
-                    modification_list.append(
-                        Modification(
-                            modification_lookup.block,
-                            modification_lookup.section,
-                            modification_lookup.codename,
-                        )
-                    )
-
-                gold_alternative_modifications = Modifications(modification_list)  # type: ignore
-
-                if not lookups:
-                    gold_alternative_or_base_alternative = "GoldAlternative"
-                    continue
-
-                if lookups[-1].code == base_alternative_way:
-                    gold_alternative_or_base_alternative = "BaseAlternative"
-                    continue
-
-                raise KeyError(
-                    f"After {lookup}, {lookups[-1]} must be either Empty, or a Base Alternative."
-                )
-
-            ## Base Alternative
-            if lookup.code == base_alternative_way:
-
-                if not lookups:
-                    base_alternative_or_base_alternative_variant = "BaseAlternative"
-                    continue
-
-                if lookups[-1].code == base_alternative_variant_way:
-                    base_alternative_or_base_alternative_variant = (
-                        "BaseAlternativeVariant"
-                    )
-                    continue
-
-                raise KeyError(
-                    f"After {lookup}, {lookups[-1]} must be either Empty, or a Base Alternative Variant."
-                )
-
-            ## Base Alternative Variant
-            if lookup.code == base_alternative_variant_way:
-                if not lookups:
-                    raise KeyError(f"Must have at least one modification for {lookup}")
-
-                if lookups[-1].plane != "MODIFICATION":
-                    raise KeyError(
-                        f"next {lookups[-1]} must be a modification for {lookup}"
-                    )
-
-                while lookups:
-                    if lookups[-1].plane != "MODIFICATION":
-                        break
-
-                    modification_lookup = lookups.pop(-1)
-                    modification_list.append(
-                        Modification(
-                            modification_lookup.block,
-                            modification_lookup.section,
-                            modification_lookup.codename,
-                        )
-                    )
-
-                base_alternative_variant_modifications = Modifications(modification_list)  # type: ignore
-
-                if not lookups:
-                    continue
-
-                raise KeyError(f"After {lookup}, must be Empty!")
-
-            ## Base
-            if lookup.code == base_way:
-
-                if not lookups:
-                    base_or_base_variant = "Base"
-                    continue
-
-                if lookups[-1].code == base_variant_way:
-                    base_or_base_variant = "BaseVariant"
-                    continue
-
-                raise KeyError(
-                    f"After {lookup}, {lookups[-1]} must be either Empty, or a Base Variant."
-                )
-
-            ## Base Variant
-            if lookup.code == base_variant_way:
-                if not lookups:
-                    raise KeyError(f"Must have at least one modification for {lookup}")
-
-                if lookups[-1].plane != "MODIFICATION":
-                    raise KeyError(
-                        f"next {lookups[-1]} must be a modification for {lookup}"
-                    )
-
-                while lookups:
-                    if lookups[-1].plane != "MODIFICATION":
-                        break
-
-                    modification_lookup = lookups.pop(-1)
-                    modification_list.append(
-                        Modification(
-                            modification_lookup.block,
-                            modification_lookup.section,
-                            modification_lookup.codename,
-                        )
-                    )
-
-                base_variant_modifications = Modifications(modification_list)  # type: ignore
-
-                if not lookups:
-                    continue
-
-                raise KeyError(f"After {lookup}, must be Empty!")
-
-            raise KeyError(f"Unknown Key {lookup}!")
-
-        filename: Filename
-        if gold_or_gold_alternative_or_base == "Gold":
-            filename = Filename(
-                library_entry, listing, Gold("Gold"), data_type, extention
+        filenames.append(
+            Filename(
+                library_entry,
+                listing,
+                gold,
+                data_type,
+                extention,
             )
-
-        if gold_or_gold_alternative_or_base == "GoldAlternative":
-            if gold_alternative_or_base_alternative == "GoldAlternative":
-                filename = Filename(
-                    library_entry,
-                    listing,
-                    Gold(
-                        GoldAlternative(
-                            gold_alternative_modifications,
-                            "GoldAlternative",
-                        )
-                    ),
-                    data_type,
-                    extention,
-                )
-
-            if gold_alternative_or_base_alternative == "BaseAlternative":
-                if base_alternative_or_base_alternative_variant == "BaseAlternative":
-                    filename = Filename(
-                        library_entry,
-                        listing,
-                        Gold(
-                            GoldAlternative(
-                                gold_alternative_modifications,
-                                BaseAlternative("BaseAlternative"),
-                            )
-                        ),
-                        data_type,
-                        extention,
-                    )
-
-                if (
-                    base_alternative_or_base_alternative_variant
-                    == "BaseAlternativeVariant"
-                ):
-                    filename = Filename(
-                        library_entry,
-                        listing,
-                        Gold(
-                            GoldAlternative(
-                                gold_alternative_modifications,
-                                BaseAlternative(
-                                    BaseAlternativeVariant(
-                                        base_alternative_variant_modifications
-                                    ),
-                                ),
-                            )
-                        ),
-                        data_type,
-                        extention,
-                    )
-        if gold_or_gold_alternative_or_base == "Base":
-            if base_or_base_variant == "Base":
-                filename = Filename(
-                    library_entry,
-                    listing,
-                    Gold(Base("Base")),
-                    data_type,
-                    extention,
-                )
-
-            if base_or_base_variant == "BaseVariant":
-                filename = Filename(
-                    library_entry,
-                    listing,
-                    Gold(Base(BaseVariant(base_variant_modifications))),
-                    data_type,
-                    extention,
-                )
-        filenames.append(filename)
+        )
 
     def get_filenames(self) -> List[Filename]:
         """Get the filename models."""
@@ -464,5 +452,8 @@ if __name__ == "__main__":
     make_filename_test: MakeFilenameTest = MakeFilenameTest()
     make_parse_filename_test: ParseFilenameTest = ParseFilenameTest()
 
-    print(make_filename_test.get_test_filename_encoded())
-    print(make_parse_filename_test.get_filenames())
+    for enc_filename in make_filename_test.get_test_filename_encoded():
+        print(enc_filename)
+
+    for filename_model in make_parse_filename_test.get_filenames():
+        print(filename_model)

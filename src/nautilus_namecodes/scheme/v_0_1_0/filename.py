@@ -2,9 +2,11 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
+from functools import reduce
 
 # from pydantic.dataclasses import dataclass
-from typing import List, Literal, Optional, Tuple, Union
+from typing import List, Literal, Tuple, Union
 
 import pydantic
 
@@ -114,18 +116,57 @@ class Modification(Codes):
         return codes
 
 
+class Ways(Enum):
+    """Enum for Ways"""
+
+    GOLD = "Gold"
+    GOLD_ALTERNATIVE = "GoldAlternative"
+    BASE = "Base"
+    BASE_ALTERNATIVE = "BaseAlternative"
+    BASE_ALTERNATIVE_VARIANT = "BaseAlternativeVariant"
+    BASE_VARIANT = "BaseVariant"
+
+
+class WayPaths:  # pylint: disable="too-few-public-methods"
+    """Paths a Way can Take"""
+
+    gold: Literal[Ways.GOLD, Ways.GOLD_ALTERNATIVE, Ways.BASE]
+    gold_alternative: Literal[Ways.GOLD_ALTERNATIVE, Ways.BASE_ALTERNATIVE]
+    base_alternative: Literal[Ways.BASE_ALTERNATIVE, Ways.BASE_ALTERNATIVE_VARIANT]
+    base: Literal[Ways.BASE, Ways.BASE_VARIANT]
+
+
 class Way(Codes, ABC):
     """Abstract Way Class"""
 
-    way: Optional[str] = None
+    way: Literal[
+        Ways.GOLD,
+        Ways.GOLD_ALTERNATIVE,
+        Ways.BASE,
+        Ways.BASE_ALTERNATIVE,
+        Ways.BASE_ALTERNATIVE_VARIANT,
+        Ways.BASE_VARIANT,
+    ]
+
+    @staticmethod
+    def snake_case(string: str) -> str:
+        """from camel case to snake case (from geeks for geeks)"""
+
+        return reduce(lambda x, y: x + ("_" if y.isupper() else "") + y, string).lower()
+
+    @staticmethod
+    def get_way_code(all_codes: AllCodes, way: Ways) -> Tuple[int, str]:
+        """Looks up the way from codes from the all_codes data structure."""
+        return (
+            all_codes.planes["WAY"]
+            .blocks["Way"]
+            .sections["way"]
+            .codes[Way.snake_case(way.value)]
+        )
 
     def get_way(self, all_codes: AllCodes) -> Tuple[int, str]:
-        """Looks up the way from codes from the all_codes data structure."""
-
-        if isinstance(self.way, str):
-            return all_codes.planes["WAY"].blocks["Way"].sections["way"].codes[self.way]
-
-        raise TypeError('Variable "way" is not a string.')
+        """Get way code from current class."""
+        return Way.get_way_code(all_codes, self.way)
 
     @abstractmethod
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
@@ -155,11 +196,16 @@ class Modifications(Codes):
         return codes
 
 
+def mk_modifications(modifications: List[Modification]) -> Modifications:
+    """Mypy helper class method"""
+    return Modifications(modifications)  # type: ignore
+
+
 @dataclass
 class DataType(Codes):
     """The Type used in the Library"""
 
-    basic_type: Union[Literal["Index"], Literal["Metadata"], Literal["Media"]]
+    basic_type: Literal["Index", "Metadata", "Media"]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [
@@ -174,7 +220,7 @@ class DataType(Codes):
 class BaseVariant(Way):
     """Modified Base from Unmodified Gold"""
 
-    way = "base_variant"
+    way = Ways.BASE_VARIANT
 
     modifications: Modifications
 
@@ -189,9 +235,9 @@ class BaseVariant(Way):
 class Base(Way):
     """Unmodified Base from Unmodified Gold"""
 
-    way = "base"
+    way = Ways.BASE
 
-    base_or_base_variant: Union[Literal["Base"], BaseVariant]
+    base_or_base_variant: Union[Literal[Ways.BASE], BaseVariant]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [self.get_way(all_codes)]
@@ -210,7 +256,7 @@ class Base(Way):
 class BaseAlternativeVariant(Way):
     """ "Modified Base from Alternative Gold"""
 
-    way = "base_alternative_variant"
+    way = Ways.BASE_ALTERNATIVE_VARIANT
 
     modifications: Modifications
 
@@ -225,10 +271,10 @@ class BaseAlternativeVariant(Way):
 class BaseAlternative(Way):
     """Unmodified Base from Alternative Gold"""
 
-    way = "base_alternative"
+    way = Ways.BASE_ALTERNATIVE
 
     base_alternative_or_base_alternative_variant: Union[
-        Literal["BaseAlternative"], BaseAlternativeVariant
+        Literal[Ways.BASE_ALTERNATIVE], BaseAlternativeVariant
     ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
@@ -252,12 +298,12 @@ class BaseAlternative(Way):
 class GoldAlternative(Way):
     """Alternative Gold"""
 
-    way = "gold_alternative"
+    way = Ways.GOLD_ALTERNATIVE
 
     modifications: Modifications
 
     gold_alternative_or_base_alternative: Union[
-        Literal["GoldAlternative"], BaseAlternative
+        Literal[Ways.GOLD_ALTERNATIVE], BaseAlternative
     ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
@@ -277,9 +323,9 @@ class GoldAlternative(Way):
 class Gold(Way):
     """Unmodified Gold"""
 
-    way = "gold"
+    way = Ways.GOLD
 
-    gold_or_gold_alternative_or_base: Union[Literal["Gold"], GoldAlternative, Base]
+    gold_or_gold_alternative_or_base: Union[Literal[Ways.GOLD], GoldAlternative, Base]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [self.get_way(all_codes)]
