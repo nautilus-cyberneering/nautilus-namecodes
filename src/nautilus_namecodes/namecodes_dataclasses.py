@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Type, TypeVar
 
-RangeType = TypeVar("RangeType", bound="Range")
+RangeTypeT = TypeVar("RangeTypeT", bound="Range")
 
 
 class Range:
@@ -20,7 +20,7 @@ class Range:
         self.step = step
 
     @classmethod
-    def mk_range(cls: Type[RangeType], _range, /) -> RangeType:
+    def mk_range(cls: Type[RangeTypeT], _range, /) -> RangeTypeT:
         """Factory to make Range Class from a Standard Range Type"""
         return cls(_range.stop, _range.start, _range.step)
 
