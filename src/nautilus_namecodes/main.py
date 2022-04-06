@@ -6,6 +6,7 @@ import typer
 from typer.main import Typer
 
 from nautilus_namecodes._version import __version__
+from nautilus_namecodes.format.filename_console import FilenameConsoleOutput
 from nautilus_namecodes.format.namecode_console import NamecodesConsoleOutput
 
 app: Typer = typer.Typer()
@@ -52,8 +53,7 @@ def filename(
 ) -> None:
     """Command for the Management of Encoded Filenames"""
     if json_schema:
-        # typer.echo(FilenameConsoleOutput.generate_json_schema())
-        pass
+        typer.echo(FilenameConsoleOutput.generate_json_schema())
 
     if not any([json_schema]):
         raise typer.BadParameter("Required to specify: --json-schema.")

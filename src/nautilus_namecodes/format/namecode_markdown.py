@@ -27,13 +27,15 @@ class MarkdownOutput:
         """Return Document"""
         return self.doc
 
-    def append_docuemnt(self, elements: Iterable[Element]) -> None:
+    def append_document(self, elements: Iterable[Element]) -> None:
         """Add to Class Document"""
 
         element: Element
         for element in elements:
-            assert isinstance(element, Element)
-            self.doc.add_element(element)
+            if isinstance(element, Element):
+                self.doc.add_element(element)
+            else:
+                raise TypeError
 
     def generate_blocks_list(self) -> Iterable[Element]:
         """Generate Basic List of Blocks, and their Sections and Codes."""
@@ -235,6 +237,6 @@ class MarkdownOutput:
 
 if __name__ == "__main__":
     markdown_output: MarkdownOutput = MarkdownOutput()
-    markdown_output.append_docuemnt(elements=markdown_output.build_codes())
+    markdown_output.append_document(elements=markdown_output.build_codes())
 
     print(markdown_output.document.render())

@@ -18,7 +18,7 @@ class NamecodesConsoleOutput:
         """Generate a Full Output for the Console"""
 
         markdown_output: MarkdownOutput = MarkdownOutput()
-        markdown_output.append_docuemnt(elements=markdown_output.build_tree())
+        markdown_output.append_document(elements=markdown_output.build_tree())
 
         return markdown_output.document.render()
 
@@ -27,7 +27,7 @@ class NamecodesConsoleOutput:
         """Generate a Full Output for the Console"""
 
         markdown_output: MarkdownOutput = MarkdownOutput()
-        markdown_output.append_docuemnt(elements=markdown_output.generate_blocks_list())
+        markdown_output.append_document(elements=markdown_output.generate_blocks_list())
 
         return markdown_output.document.render()
 
@@ -36,7 +36,7 @@ class NamecodesConsoleOutput:
         """Generate a Full Output for the Console"""
 
         markdown_output: MarkdownOutput = MarkdownOutput()
-        markdown_output.append_docuemnt(elements=markdown_output.build_codes())
+        markdown_output.append_document(elements=markdown_output.build_codes())
 
         return markdown_output.document.render()
 
