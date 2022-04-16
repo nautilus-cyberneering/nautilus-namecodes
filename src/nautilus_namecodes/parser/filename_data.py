@@ -22,105 +22,8 @@ from nautilus_namecodes.scheme.v_0_1_0.filename import (
     Way,
     WayPaths,
     Ways,
-    mk_modifications,
-)
-
-from nautilus_namecodes.scheme.v_0_1_0.filename_model import (
-    NautilusNamecodesFilenameBaseModel,
 )
 from nautilus_namecodes.scheme.v_0_1_0.namecode_lookup import NamecodeLookup
-from nautilus_namecodes.scheme.v_0_1_0.namecodes import AllNameCodes
-
-
-class MakeFilenameTest:
-    """Creates a Filename"""
-
-    all_codes: AllCodes = AllNameCodes().get_all_codes
-
-    test_library_entry = LibraryEntry(LibraryName("aaa"), ItemNumber(0x001))
-    test_listing: Listing = Listing(0x001, 0x001)
-    test_data_type: DataType = DataType("Index")
-    test_extention = Extension("test.time")
-
-    test_modifications: Dict[str, Modifications] = {
-        "A": mk_modifications(
-            [
-                Modification("Adaption", "prospective", "bottom"),
-            ]
-        ),
-        "AB": mk_modifications(
-            [
-                Modification("Adaption", "prospective", "bottom"),
-                Modification("Adaption", "prospective", "top"),
-            ]
-        ),
-        "BA": mk_modifications(
-            [
-                Modification("Adaption", "prospective", "top"),
-                Modification("Adaption", "prospective", "bottom"),
-            ]
-        ),
-    }
-
-    test_golds: Dict[str, Gold] = {
-        "Gold": Gold(Ways.GOLD),
-        "GoldAlternative": Gold(
-            GoldAlternative(test_modifications["A"], Ways.GOLD_ALTERNATIVE)
-        ),
-        "GoldAlternativeBase": Gold(
-            GoldAlternative(
-                test_modifications["AB"],
-                GoldAlternativeBase(Ways.GOLD_ALTERNATIVE_BASE),
-            )
-        ),
-        "GoldAlternativeBaseVariant": Gold(
-            GoldAlternative(
-                test_modifications["BA"],
-                GoldAlternativeBase(
-                    GoldAlternativeBaseVariant(test_modifications["A"])
-                ),
-            )
-        ),
-        "GoldBase": Gold(GoldBase(Ways.GOLD_BASE)),
-        "GoldBaseVariant": Gold(GoldBase(GoldBaseVariant(test_modifications["A"]))),
-    }
-
-    test_filenames: Dict[str, Filename] = {}
-
-    for test_gold in test_golds.items():
-        test_filenames |= {
-            test_gold[0]: Filename(
-                test_library_entry,
-                test_listing,
-                test_gold[1],
-                test_data_type,
-                test_extention,
-            ),
-        }
-
-    def get_test_filenames_dataclass(self) -> List[Filename]:
-        """Gets the filenames for testing."""
-
-        return [*self.test_filenames.values()]
-
-    def get_test_filename_models(self) -> List[NautilusNamecodesFilenameBaseModel]:
-        """Return Verified Pydantic Model"""
-
-        return [
-            NautilusNamecodesFilenameBaseModel(encoding=filename)
-            for filename in self.get_test_filenames_dataclass()
-        ]
-
-    def get_test_filename_json(self) -> List[str]:
-        """Return Json from Model"""
-        return [model.json() for model in self.get_test_filename_models()]
-
-    def get_test_filename_encoded(self) -> List[str]:
-        """Return Encoded Filename"""
-        return [
-            filename.get_filename(self.all_codes)
-            for filename in self.get_test_filenames_dataclass()
-        ]
 
 
 class ParseFilename:
@@ -160,11 +63,11 @@ class ParseFilename:
         modifications: ParseFilename.ModificationsT = {}
 
         # We must start with Gold
-        if lookups[-1].code != waycode[Ways.GOLD]:
-            raise KeyError(lookups[-1])
+        if lookups[0].code != waycode[Ways.GOLD]:
+            raise KeyError(lookups[0])
 
         while lookups:
-            lookup: NamecodeLookup = lookups.pop(-1)
+            lookup: NamecodeLookup = lookups.pop(0)
 
             modification_lookup: NamecodeLookup
             modification_list: List[Modification] = []
@@ -175,11 +78,11 @@ class ParseFilename:
                     waypaths.gold = Ways.GOLD
                     continue
 
-                if lookups[-1].code == waycode[Ways.GOLD_ALTERNATIVE]:
+                if lookups[0].code == waycode[Ways.GOLD_ALTERNATIVE]:
                     waypaths.gold = Ways.GOLD_ALTERNATIVE
                     continue
 
-                if lookups[-1].code == waycode[Ways.GOLD_BASE]:
+                if lookups[0].code == waycode[Ways.GOLD_BASE]:
                     waypaths.gold = Ways.GOLD_BASE
                     continue
 
@@ -192,16 +95,16 @@ class ParseFilename:
                 if not lookups:
                     raise KeyError(f"Must have at least one modification for {lookup}")
 
-                if lookups[-1].plane != "MODIFICATION":
+                if lookups[0].plane != "MODIFICATION":
                     raise KeyError(
                         f"next {lookups[-1]} must be a modification for {lookup}"
                     )
 
                 while lookups:
-                    if lookups[-1].plane != "MODIFICATION":
+                    if lookups[0].plane != "MODIFICATION":
                         break
 
-                    modification_lookup = lookups.pop(-1)
+                    modification_lookup = lookups.pop(0)
                     modification_list.append(
                         Modification(
                             modification_lookup.block,
@@ -216,7 +119,7 @@ class ParseFilename:
                     waypaths.gold_alternative = Ways.GOLD_ALTERNATIVE
                     continue
 
-                if lookups[-1].code == waycode[Ways.GOLD_ALTERNATIVE_BASE]:
+                if lookups[0].code == waycode[Ways.GOLD_ALTERNATIVE_BASE]:
                     waypaths.gold_alternative = Ways.GOLD_ALTERNATIVE_BASE
                     continue
 
@@ -231,12 +134,12 @@ class ParseFilename:
                     waypaths.gold_alternative_base = Ways.GOLD_ALTERNATIVE_BASE
                     continue
 
-                if lookups[-1].code == waycode[Ways.GOLD_ALTERNATIVE_BASE_VARIANT]:
+                if lookups[0].code == waycode[Ways.GOLD_ALTERNATIVE_BASE_VARIANT]:
                     waypaths.gold_alternative_base = Ways.GOLD_ALTERNATIVE_BASE_VARIANT
                     continue
 
                 raise KeyError(
-                    f"After {lookup}, {lookups[-1]} must be either Empty, or a Base Alternative Variant."
+                    f"After {lookup}, {lookups[0]} must be either Empty, or a Base Alternative Variant."
                 )
 
             ## Base Alternative Variant
@@ -244,16 +147,16 @@ class ParseFilename:
                 if not lookups:
                     raise KeyError(f"Must have at least one modification for {lookup}")
 
-                if lookups[-1].plane != "MODIFICATION":
+                if lookups[0].plane != "MODIFICATION":
                     raise KeyError(
                         f"next {lookups[-1]} must be a modification for {lookup}"
                     )
 
                 while lookups:
-                    if lookups[-1].plane != "MODIFICATION":
+                    if lookups[0].plane != "MODIFICATION":
                         break
 
-                    modification_lookup = lookups.pop(-1)
+                    modification_lookup = lookups.pop(0)
                     modification_list.append(
                         Modification(
                             modification_lookup.block,
@@ -276,7 +179,7 @@ class ParseFilename:
                     waypaths.gold_base = Ways.GOLD_BASE
                     continue
 
-                if lookups[-1].code == waycode[Ways.GOLD_BASE_VARIANT]:
+                if lookups[0].code == waycode[Ways.GOLD_BASE_VARIANT]:
                     waypaths.gold_base = Ways.GOLD_BASE_VARIANT
                     continue
 
@@ -289,16 +192,16 @@ class ParseFilename:
                 if not lookups:
                     raise KeyError(f"Must have at least one modification for {lookup}")
 
-                if lookups[-1].plane != "MODIFICATION":
+                if lookups[0].plane != "MODIFICATION":
                     raise KeyError(
-                        f"next {lookups[-1]} must be a modification for {lookup}"
+                        f"next {lookups[0]} must be a modification for {lookup}"
                     )
 
                 while lookups:
-                    if lookups[-1].plane != "MODIFICATION":
+                    if lookups[0].plane != "MODIFICATION":
                         break
 
-                    modification_lookup = lookups.pop(-1)
+                    modification_lookup = lookups.pop(0)
                     modification_list.append(
                         Modification(
                             modification_lookup.block,
@@ -366,31 +269,22 @@ class ParseFilename:
                     GoldBase(GoldBaseVariant(modifications[Ways.GOLD_BASE_VARIANT]))
                 )
 
-
-class ParseFilenameTest:  # pylint: disable=too-few-public-methods
-    """Filename to model."""
-
-    all_codes: AllCodes = AllNameCodes().get_all_codes
-
-    make_filename_test: MakeFilenameTest = MakeFilenameTest()
-    test_filenames: List[str] = make_filename_test.get_test_filename_encoded()
-
-    filenames: List[Filename] = []
-
-    for test_filename in test_filenames:
+    @staticmethod
+    def parse_filename(all_codes: AllCodes, filename: str) -> Filename:
+        """Parse the Filename"""
 
         # Library Name
-        library_name: LibraryName = LibraryName(test_filename.split("-").pop(0)[:3])
+        library_name: LibraryName = LibraryName(filename.split("-").pop(0)[:3])
 
         # Item Number
         item_number: ItemNumber = ItemNumber(
-            int(test_filename.split("-")[0][3:], 16) - 0x100000
+            int(filename.split("-")[0][3:], 16) - 0x100000
         )
 
         ## Library Entry
         library_entry = LibraryEntry(library_name, item_number)
 
-        data: List[str] = test_filename.split("-", maxsplit=1)[1].split(".")
+        data: List[str] = filename.split("-", maxsplit=1)[1].split(".")
 
         lookups: List[NamecodeLookup] = []
         extentions: List[str] = []
@@ -446,36 +340,18 @@ class ParseFilenameTest:  # pylint: disable=too-few-public-methods
             ParseFilename.find_path_and_extract_modifications(all_codes, lookups)
         )
 
-        filenames.append(
-            Filename(
-                library_entry,
-                listing,
-                gold,
-                data_type,
-                extention,
-            )
+        return Filename(
+            library_entry,
+            listing,
+            gold,
+            data_type,
+            extention,
         )
 
-    def get_filenames(self) -> List[Filename]:
-        """Get the filename models."""
-        return self.filenames
+
+class ParseFilenameTest:  # pylint: disable=too-few-public-methods
+    """Filename to model."""
 
 
 if __name__ == "__main__":
-
-    make_filename_test: MakeFilenameTest = MakeFilenameTest()
-
-    for enc_filename in make_filename_test.get_test_filename_encoded():
-        print(enc_filename)
-
-    make_parse_filename_test: ParseFilenameTest = ParseFilenameTest()
-
-    for filename_model in make_parse_filename_test.get_filenames():
-        ##print("\n\n")
-
-        print(filename_model.get_filename(AllNameCodes().get_all_codes))
-        # print("\n")
-
-        ##print(NautilusNamecodesFilenameBaseModel(encoding=filename_model).json())
-        ##print("\n\n")
-        # print(NautilusNamecodesFilenameBaseModel(encoding=filename_model).schema_json())
+    pass

@@ -5,11 +5,9 @@ from typing import Optional
 import typer
 from typer.main import Typer
 
+from nautilus_namecodes._version import __version__
 from nautilus_namecodes.app.filename_app import filename_app
 from nautilus_namecodes.app.namecode_app import namecode_app
-
-from nautilus_namecodes._version import __version__
-
 
 app: Typer = typer.Typer()
 
