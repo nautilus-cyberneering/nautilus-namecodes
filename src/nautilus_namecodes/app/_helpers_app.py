@@ -1,3 +1,5 @@
+"""Helpers for the various applications"""
+
 import typer
 
 

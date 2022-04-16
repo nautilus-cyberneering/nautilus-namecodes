@@ -1,3 +1,5 @@
+"""Application to interact with the Namecode Filenames"""
+
 import typer
 
 from nautilus_namecodes.format.filename_console import FilenameConsoleOutput

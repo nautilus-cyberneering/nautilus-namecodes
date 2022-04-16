@@ -1,3 +1,5 @@
+"""Application for interacting with the Namecodes"""
+
 import typer
 
 from nautilus_namecodes.app._helpers_app import mutually_exclusive_group

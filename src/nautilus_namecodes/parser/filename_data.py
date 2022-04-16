@@ -270,7 +270,9 @@ class ParseFilename:
                 )
 
     @staticmethod
-    def parse_filename(all_codes: AllCodes, filename: str) -> Filename:
+    def parse_filename(  # pylint: disable="too-many-locals"
+        all_codes: AllCodes, filename: str
+    ) -> Filename:
         """Parse the Filename"""
 
         # Library Name
