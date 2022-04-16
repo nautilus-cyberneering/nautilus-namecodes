@@ -1,6 +1,6 @@
 """Format the Generated Namecodes for Console Presentation"""
 
-from nautilus_namecodes.format.generate_markdown import MarkdownOutput
+from nautilus_namecodes.format.namecode_markdown import MarkdownOutput
 from nautilus_namecodes.scheme.v_0_1_0.namecode_model import (
     AllNameCodes,
     NautilusNamecodesListModel,
@@ -10,7 +10,7 @@ from nautilus_namecodes.scheme.v_0_1_0.namecode_model import (
 )
 
 
-class ConsoleOutput:
+class NamecodesConsoleOutput:
     """Generate Text Output suitable for the Console."""
 
     @staticmethod
@@ -18,7 +18,7 @@ class ConsoleOutput:
         """Generate a Full Output for the Console"""
 
         markdown_output: MarkdownOutput = MarkdownOutput()
-        markdown_output.append_docuemnt(elements=markdown_output.build_tree())
+        markdown_output.append_document(elements=markdown_output.build_tree())
 
         return markdown_output.document.render()
 
@@ -27,7 +27,7 @@ class ConsoleOutput:
         """Generate a Full Output for the Console"""
 
         markdown_output: MarkdownOutput = MarkdownOutput()
-        markdown_output.append_docuemnt(elements=markdown_output.generate_blocks_list())
+        markdown_output.append_document(elements=markdown_output.generate_blocks_list())
 
         return markdown_output.document.render()
 
@@ -36,7 +36,7 @@ class ConsoleOutput:
         """Generate a Full Output for the Console"""
 
         markdown_output: MarkdownOutput = MarkdownOutput()
-        markdown_output.append_docuemnt(elements=markdown_output.build_codes())
+        markdown_output.append_document(elements=markdown_output.build_codes())
 
         return markdown_output.document.render()
 
@@ -102,18 +102,18 @@ class ConsoleOutput:
 
 
 if __name__ == "__main__2":
-    print(ConsoleOutput.generate_tree_output())
-    print(ConsoleOutput.generate_blocks_output())
-    print(ConsoleOutput.generate_codes_output())
-    print(ConsoleOutput.generate_json_schema_tree())
-    print(ConsoleOutput.generate_json_schema())
-    print(ConsoleOutput.generate_json_schema_codelist())
-    print(ConsoleOutput.generate_json_tree())
-    print(ConsoleOutput.generate_json())
-    print(ConsoleOutput.generate_json_codelist())
+    print(NamecodesConsoleOutput.generate_tree_output())
+    print(NamecodesConsoleOutput.generate_blocks_output())
+    print(NamecodesConsoleOutput.generate_codes_output())
+    print(NamecodesConsoleOutput.generate_json_schema_tree())
+    print(NamecodesConsoleOutput.generate_json_schema())
+    print(NamecodesConsoleOutput.generate_json_schema_codelist())
+    print(NamecodesConsoleOutput.generate_json_tree())
+    print(NamecodesConsoleOutput.generate_json())
+    print(NamecodesConsoleOutput.generate_json_codelist())
 
 
 if __name__ == "__main__":
-    print(ConsoleOutput.generate_json_schema_tree())
-    # print(ConsoleOutput.generate_json())
-    # print(ConsoleOutput.generate_blocks_output())
+    print(NamecodesConsoleOutput.generate_json_schema_tree())
+    # print(NamecodesConsoleOutput.generate_json())
+    # print(NamecodesConsoleOutput.generate_blocks_output())

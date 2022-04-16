@@ -27,24 +27,26 @@ class MarkdownOutput:
         """Return Document"""
         return self.doc
 
-    def append_docuemnt(self, elements: Iterable[Element]) -> None:
+    def append_document(self, elements: Iterable[Element]) -> None:
         """Add to Class Document"""
 
         element: Element
         for element in elements:
-            assert isinstance(element, Element)
-            self.doc.add_element(element)
+            if isinstance(element, Element):
+                self.doc.add_element(element)
+            else:
+                raise TypeError
 
     def generate_blocks_list(self) -> Iterable[Element]:
         """Generate Basic List of Blocks, and their Sections and Codes."""
 
         blocks_list: List[Element] = []
 
-        planes: Iterable[PlaneCodes] = self.all_name_codes.planes
+        planes: Iterable[PlaneCodes] = self.all_name_codes.planes.values()
         plane: PlaneCodes
 
         for plane in planes:
-            blocks: Iterable[BlockCodes] = plane.blocks
+            blocks: Iterable[BlockCodes] = plane.blocks.values()
             block: BlockCodes
 
             for block in blocks:
@@ -57,15 +59,15 @@ class MarkdownOutput:
 
         sections_list: List[Element] = []
 
-        planes: Iterable[PlaneCodes] = self.all_name_codes.planes
+        planes: Iterable[PlaneCodes] = self.all_name_codes.planes.values()
         plane: PlaneCodes
 
         for plane in planes:
-            blocks: Iterable[BlockCodes] = plane.blocks
+            blocks: Iterable[BlockCodes] = plane.blocks.values()
             block: BlockCodes
 
             for block in blocks:
-                sections: Iterable[SectionCodes] = block.sections
+                sections: Iterable[SectionCodes] = block.sections.values()
                 section: SectionCodes
 
                 for section in sections:
@@ -84,9 +86,9 @@ class MarkdownOutput:
         output += f" ((({self.all_name_codes.gen_output_range()})))\n"
 
         plane: PlaneCodes
-        plane_last: PlaneCodes = self.all_name_codes.planes[-1]
+        plane_last: PlaneCodes = list(*self.all_name_codes.planes.values())[-1]
 
-        for plane in self.all_name_codes.planes:
+        for plane in self.all_name_codes.planes.values():
 
             plane_joiner: str = ("├──", "└──")[plane == plane_last]
             block_spacer: str = ("│   ", "    ")[plane == plane_last]
@@ -95,9 +97,9 @@ class MarkdownOutput:
             output += f" (({plane.gen_output_range()}))\n"
 
             block: BlockCodes
-            block_last: BlockCodes = plane.blocks[-1]
+            block_last: BlockCodes = list(*plane.blocks.values())[-1]
 
-            for block in plane.blocks:
+            for block in plane.blocks.values():
 
                 block_joiner: str = (f"{block_spacer}├──", f"{block_spacer}└──")[
                     block == block_last
@@ -110,9 +112,9 @@ class MarkdownOutput:
                 output += f" ({block.gen_output_range()})\n"
 
                 section: SectionCodes
-                section_last: SectionCodes = block.sections[-1]
+                section_last: SectionCodes = list(*block.sections.values())[-1]
 
-                for section in block.sections:
+                for section in block.sections.values():
 
                     section_joiner: str = (
                         f"{section_spacer}├──",
@@ -145,9 +147,9 @@ class MarkdownOutput:
 
         codes_data: List[Iterable[InlineText]] = []
 
-        sections: Iterable[SectionCodes] = block.sections
+        sections: Iterable[SectionCodes] = block.sections.values()
         section: SectionCodes
-        section_last: SectionCodes = block.sections[-1]
+        section_last: SectionCodes = list(block.sections.items())[-1][1]
 
         for section in sections:
             codes_data.append(
@@ -155,7 +157,7 @@ class MarkdownOutput:
             )
 
             section_items: Tuple[int, str]
-            for section_items in section.codes.items():
+            for section_items in section.codes.values():
 
                 code = InlineText(f"0x{section_items[0]:=04X}")
                 name = InlineText(section_items[1])
@@ -191,7 +193,7 @@ class MarkdownOutput:
 
         section_items: Tuple[int, str]
 
-        for section_items in section.codes.items():
+        for section_items in section.codes.values():
 
             code = InlineText(f"0x{section_items[0]:=04X}")
             name = InlineText(section_items[1])
@@ -235,6 +237,6 @@ class MarkdownOutput:
 
 if __name__ == "__main__":
     markdown_output: MarkdownOutput = MarkdownOutput()
-    markdown_output.append_docuemnt(elements=markdown_output.build_codes())
+    markdown_output.append_document(elements=markdown_output.build_codes())
 
     print(markdown_output.document.render())

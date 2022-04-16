@@ -34,11 +34,9 @@ tox = "^4.0.0b1"
 atoml = "^1.1.0"
 typer = {version = "^0.4.0", extras = ["all"]}
 pydantic = "~1.8.2"
+typing-extensions = "^4.1.1"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
-pytest-cov = "^3.0.0"
-pytest-srcpaths = "^1.2.1"
 black = "^22"
 mypy = "^0.910"
 pylint = "^2.11.1"
@@ -46,6 +44,9 @@ bandit = "^1.7.0"
 isort = "^5.10.0"
 Sphinx = "^4.2.0"
 myst-parser = "^0.15.2"
+pytest = "^7.1.1"
+pytest-cov = "^3.0.0"
+pytest-srcpaths = "^1.2.1"
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -78,6 +79,9 @@ skips = ["B101"]
 
 [tool.pylint.master]
 ignore-paths="^.*contrib/snakemd.*py$"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable=["R0801"]
 
 [tool.pylint.FORMAT]
 max-line-length=120
