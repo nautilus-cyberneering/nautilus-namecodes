@@ -4,15 +4,15 @@ from typing import Dict, List, Literal, Tuple
 
 from nautilus_namecodes.namecodes_dataclasses import AllCodes
 from nautilus_namecodes.scheme.v_0_1_0.filename import (
-    Base,
-    BaseAlternative,
-    BaseAlternativeVariant,
-    BaseVariant,
     DataType,
     Extension,
     Filename,
     Gold,
     GoldAlternative,
+    GoldAlternativeBase,
+    GoldAlternativeBaseVariant,
+    GoldBase,
+    GoldBaseVariant,
     ItemNumber,
     LibraryEntry,
     LibraryName,
@@ -24,6 +24,7 @@ from nautilus_namecodes.scheme.v_0_1_0.filename import (
     Ways,
     mk_modifications,
 )
+
 from nautilus_namecodes.scheme.v_0_1_0.filename_model import (
     NautilusNamecodesFilenameBaseModel,
 )
@@ -36,64 +37,72 @@ class MakeFilenameTest:
 
     all_codes: AllCodes = AllNameCodes().get_all_codes
 
-    gold: Gold = Gold(Ways.GOLD)
+    test_library_entry = LibraryEntry(LibraryName("aaa"), ItemNumber(0x001))
+    test_listing: Listing = Listing(0x001, 0x001)
+    test_data_type: DataType = DataType("Index")
+    test_extention = Extension("test.time")
 
-    ## Note, modifications type is ignored because of pydantic bug.
+    test_modifications: Dict[str, Modifications] = {
+        "One": mk_modifications(
+            [
+                Modification("Adaption", "focus", "background"),
+            ]
+        ),
+        "Two": mk_modifications(
+            [
+                Modification("Adaption", "prospective", "bottom"),
+                Modification("Adaption", "prospective", "top"),
+            ]
+        ),
+        "Three": mk_modifications(
+            [
+                Modification("Adaption", "prospective", "bottom"),
+                Modification("Adaption", "prospective", "top"),
+                Modification("Adaption", "focus", "background"),
+            ]
+        ),
+    }
 
-    gold_base_var: Gold = Gold(
-        Base(
-            BaseVariant(
-                mk_modifications(
-                    [
-                        Modification("Adaption", "focus", "background"),
-                    ]
-                )
+    test_golds: Dict[str, Gold] = {
+        "Gold": Gold(Ways.GOLD),
+        "GoldAlternative": Gold(
+            GoldAlternative(test_modifications["One"], Ways.GOLD_ALTERNATIVE)
+        ),
+        "GoldAlternativeBase": Gold(
+            GoldAlternative(
+                test_modifications["One"],
+                GoldAlternativeBase(Ways.GOLD_ALTERNATIVE_BASE),
+            )
+        ),
+        "GoldAlternativeBaseVariant": Gold(
+            GoldAlternative(
+                test_modifications["One"],
+                GoldAlternativeBase(
+                    GoldAlternativeBaseVariant(test_modifications["One"])
+                ),
+            )
+        ),
+        "GoldBase": Gold(GoldBase(Ways.GOLD_BASE)),
+        "GoldBaseVariant": Gold(GoldBase(GoldBaseVariant(test_modifications["One"]))),
+    }
+
+    test_filenames: Dict[str, Filename] = {}
+
+    for test_gold in test_golds.items():
+        test_filenames |= {
+            test_gold[0]: Filename(
+                test_library_entry,
+                test_listing,
+                test_gold[1],
+                test_data_type,
+                test_extention,
             ),
-        )
-    )
-
-    gold_alt_base_alt_var: Gold = Gold(
-        GoldAlternative(
-            mk_modifications(
-                [
-                    Modification("Adaption", "focus", "background"),
-                ]
-            ),
-            BaseAlternative(
-                BaseAlternativeVariant(
-                    mk_modifications(
-                        [
-                            Modification("Adaption", "prospective", "bottom"),
-                        ]
-                    )
-                )
-            ),
-        )
-    )
-
-    library_entry = LibraryEntry(LibraryName("aaa"), ItemNumber(0x001))
-    listing: Listing = Listing(0x001, 0x001)
-    data_type: DataType = DataType("Index")
-    extention = Extension("test.time")
-
-    filename_gold: Filename = Filename(
-        library_entry, listing, gold, data_type, extention
-    )
-    filename_gold_base_var: Filename = Filename(
-        library_entry, listing, gold_base_var, data_type, extention
-    )
-    filename_gold_alt_base_alt_var: Filename = Filename(
-        library_entry, listing, gold_alt_base_alt_var, data_type, extention
-    )
+        }
 
     def get_test_filenames_dataclass(self) -> List[Filename]:
         """Gets the filenames for testing."""
 
-        return [
-            self.filename_gold,
-            self.filename_gold_base_var,
-            self.filename_gold_alt_base_alt_var,
-        ]
+        return [*self.test_filenames.values()]
 
     def get_test_filename_models(self) -> List[NautilusNamecodesFilenameBaseModel]:
         """Return Verified Pydantic Model"""
@@ -120,7 +129,9 @@ class ParseFilename:
 
     ModificationsT = Dict[
         Literal[
-            Ways.GOLD_ALTERNATIVE, Ways.BASE_ALTERNATIVE_VARIANT, Ways.BASE_VARIANT
+            Ways.GOLD_ALTERNATIVE,
+            Ways.GOLD_ALTERNATIVE_BASE_VARIANT,
+            Ways.GOLD_BASE_VARIANT,
         ],
         Modifications,
     ]
@@ -136,12 +147,14 @@ class ParseFilename:
         waycode: Dict[Ways, Tuple[int, str]] = {
             Ways.GOLD: Way.get_way_code(all_codes, Ways.GOLD),
             Ways.GOLD_ALTERNATIVE: Way.get_way_code(all_codes, Ways.GOLD_ALTERNATIVE),
-            Ways.BASE: Way.get_way_code(all_codes, Ways.BASE),
-            Ways.BASE_ALTERNATIVE: Way.get_way_code(all_codes, Ways.BASE_ALTERNATIVE),
-            Ways.BASE_ALTERNATIVE_VARIANT: Way.get_way_code(
-                all_codes, Ways.BASE_ALTERNATIVE_VARIANT
+            Ways.GOLD_ALTERNATIVE_BASE: Way.get_way_code(
+                all_codes, Ways.GOLD_ALTERNATIVE_BASE
             ),
-            Ways.BASE_VARIANT: Way.get_way_code(all_codes, Ways.BASE_VARIANT),
+            Ways.GOLD_ALTERNATIVE_BASE_VARIANT: Way.get_way_code(
+                all_codes, Ways.GOLD_ALTERNATIVE_BASE_VARIANT
+            ),
+            Ways.GOLD_BASE: Way.get_way_code(all_codes, Ways.GOLD_BASE),
+            Ways.GOLD_BASE_VARIANT: Way.get_way_code(all_codes, Ways.GOLD_BASE_VARIANT),
         }
 
         waypaths = WayPaths()
@@ -167,8 +180,8 @@ class ParseFilename:
                     waypaths.gold = Ways.GOLD_ALTERNATIVE
                     continue
 
-                if lookups[-1].code == waycode[Ways.BASE]:
-                    waypaths.gold = Ways.BASE
+                if lookups[-1].code == waycode[Ways.GOLD_BASE]:
+                    waypaths.gold = Ways.GOLD_BASE
                     continue
 
                 raise KeyError(
@@ -204,8 +217,8 @@ class ParseFilename:
                     waypaths.gold_alternative = Ways.GOLD_ALTERNATIVE
                     continue
 
-                if lookups[-1].code == waycode[Ways.BASE_ALTERNATIVE]:
-                    waypaths.gold_alternative = Ways.BASE_ALTERNATIVE
+                if lookups[-1].code == waycode[Ways.GOLD_ALTERNATIVE_BASE]:
+                    waypaths.gold_alternative = Ways.GOLD_ALTERNATIVE_BASE
                     continue
 
                 raise KeyError(
@@ -213,14 +226,14 @@ class ParseFilename:
                 )
 
             ## Base Alternative
-            if lookup.code == waycode[Ways.BASE_ALTERNATIVE]:
+            if lookup.code == waycode[Ways.GOLD_ALTERNATIVE_BASE]:
 
                 if not lookups:
-                    waypaths.base_alternative = Ways.BASE_ALTERNATIVE
+                    waypaths.gold_alternative_base = Ways.GOLD_ALTERNATIVE_BASE
                     continue
 
-                if lookups[-1].code == waycode[Ways.BASE_ALTERNATIVE_VARIANT]:
-                    waypaths.base_alternative = Ways.BASE_ALTERNATIVE_VARIANT
+                if lookups[-1].code == waycode[Ways.GOLD_ALTERNATIVE_BASE_VARIANT]:
+                    waypaths.gold_alternative_base = Ways.GOLD_ALTERNATIVE_BASE_VARIANT
                     continue
 
                 raise KeyError(
@@ -228,7 +241,7 @@ class ParseFilename:
                 )
 
             ## Base Alternative Variant
-            if lookup.code == waycode[Ways.BASE_ALTERNATIVE_VARIANT]:
+            if lookup.code == waycode[Ways.GOLD_ALTERNATIVE_BASE_VARIANT]:
                 if not lookups:
                     raise KeyError(f"Must have at least one modification for {lookup}")
 
@@ -250,7 +263,7 @@ class ParseFilename:
                         )
                     )
 
-                modifications[Ways.BASE_ALTERNATIVE_VARIANT] = Modifications(modification_list)  # type: ignore
+                modifications[Ways.GOLD_ALTERNATIVE_BASE_VARIANT] = Modifications(modification_list)  # type: ignore
 
                 if not lookups:
                     continue
@@ -258,14 +271,14 @@ class ParseFilename:
                 raise KeyError(f"After {lookup}, must be Empty!")
 
             ## Base
-            if lookup.code == waycode[Ways.BASE]:
+            if lookup.code == waycode[Ways.GOLD_BASE]:
 
                 if not lookups:
-                    waypaths.base = Ways.BASE
+                    waypaths.gold_base = Ways.GOLD_BASE
                     continue
 
-                if lookups[-1].code == waycode[Ways.BASE_VARIANT]:
-                    waypaths.base = Ways.BASE_VARIANT
+                if lookups[-1].code == waycode[Ways.GOLD_BASE_VARIANT]:
+                    waypaths.gold_base = Ways.GOLD_BASE_VARIANT
                     continue
 
                 raise KeyError(
@@ -273,7 +286,7 @@ class ParseFilename:
                 )
 
             ## Base Variant
-            if lookup.code == waycode[Ways.BASE_VARIANT]:
+            if lookup.code == waycode[Ways.GOLD_BASE_VARIANT]:
                 if not lookups:
                     raise KeyError(f"Must have at least one modification for {lookup}")
 
@@ -295,7 +308,7 @@ class ParseFilename:
                         )
                     )
 
-                modifications[Ways.BASE_VARIANT] = Modifications(modification_list)  # type: ignore
+                modifications[Ways.GOLD_BASE_VARIANT] = Modifications(modification_list)  # type: ignore
 
                 if not lookups:
                     continue
@@ -326,31 +339,33 @@ class ParseFilename:
                         Ways.GOLD_ALTERNATIVE,
                     )
                 )
-            if waypaths.gold_alternative == Ways.BASE_ALTERNATIVE:
-                if waypaths.base_alternative == Ways.BASE_ALTERNATIVE:
+            if waypaths.gold_alternative == Ways.GOLD_ALTERNATIVE_BASE:
+                if waypaths.gold_alternative_base == Ways.GOLD_ALTERNATIVE_BASE:
                     return Gold(
                         GoldAlternative(
                             modifications[Ways.GOLD_ALTERNATIVE],
-                            BaseAlternative(Ways.BASE_ALTERNATIVE),
+                            GoldAlternativeBase(Ways.GOLD_ALTERNATIVE_BASE),
                         )
                     )
-                if waypaths.base_alternative == Ways.BASE_ALTERNATIVE_VARIANT:
+                if waypaths.gold_alternative_base == Ways.GOLD_ALTERNATIVE_BASE_VARIANT:
                     return Gold(
                         GoldAlternative(
                             modifications[Ways.GOLD_ALTERNATIVE],
-                            BaseAlternative(
-                                BaseAlternativeVariant(
-                                    modifications[Ways.BASE_ALTERNATIVE_VARIANT]
+                            GoldAlternativeBase(
+                                GoldAlternativeBaseVariant(
+                                    modifications[Ways.GOLD_ALTERNATIVE_BASE_VARIANT]
                                 ),
                             ),
                         )
                     )
 
-        if waypaths.gold == Ways.BASE:
-            if waypaths.base == Ways.BASE:
-                return Gold(Base(Ways.BASE))
-            if waypaths.base == Ways.BASE_VARIANT:
-                return Gold(Base(BaseVariant(modifications[Ways.BASE_VARIANT])))
+        if waypaths.gold == Ways.GOLD_BASE:
+            if waypaths.gold_base == Ways.GOLD_BASE:
+                return Gold(GoldBase(Ways.GOLD_BASE))
+            if waypaths.gold_base == Ways.GOLD_BASE_VARIANT:
+                return Gold(
+                    GoldBase(GoldBaseVariant(modifications[Ways.GOLD_BASE_VARIANT]))
+                )
 
 
 class ParseFilenameTest:  # pylint: disable=too-few-public-methods
@@ -366,11 +381,11 @@ class ParseFilenameTest:  # pylint: disable=too-few-public-methods
     for test_filename in test_filenames:
 
         # Library Name
-        library_name: LibraryName = LibraryName(test_filename.split("-").pop(0)[:4])
+        library_name: LibraryName = LibraryName(test_filename.split("-").pop(0)[:3])
 
         # Item Number
         item_number: ItemNumber = ItemNumber(
-            int(test_filename.split("-")[0][4:], 16) - 0x100000
+            int(test_filename.split("-")[0][3:], 16) - 0x100000
         )
 
         ## Library Entry
@@ -453,7 +468,15 @@ if __name__ == "__main__":
     make_parse_filename_test: ParseFilenameTest = ParseFilenameTest()
 
     for enc_filename in make_filename_test.get_test_filename_encoded():
-        print(enc_filename)
+        # print(enc_filename)
+        pass
 
     for filename_model in make_parse_filename_test.get_filenames():
-        print(filename_model)
+        print("\n\n")
+
+        print(filename_model.get_filename(AllNameCodes().get_all_codes))
+        print("\n")
+
+        print(NautilusNamecodesFilenameBaseModel(encoding=filename_model).json())
+        print("\n\n")
+        # print(NautilusNamecodesFilenameBaseModel(encoding=filename_model).schema_json())

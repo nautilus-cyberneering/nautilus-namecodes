@@ -6,7 +6,14 @@ from enum import Enum
 from functools import reduce
 
 # from pydantic.dataclasses import dataclass
-from typing import List, Literal, Tuple, Union
+from typing import (  # pylint: disable="unused-import"
+    List,
+    Literal,
+    Mapping,
+    Set,
+    Tuple,
+    Union,
+)
 
 import pydantic
 
@@ -121,19 +128,21 @@ class Ways(Enum):
 
     GOLD = "Gold"
     GOLD_ALTERNATIVE = "GoldAlternative"
-    BASE = "Base"
-    BASE_ALTERNATIVE = "BaseAlternative"
-    BASE_ALTERNATIVE_VARIANT = "BaseAlternativeVariant"
-    BASE_VARIANT = "BaseVariant"
+    GOLD_ALTERNATIVE_BASE = "GoldAlternativeBase"
+    GOLD_ALTERNATIVE_BASE_VARIANT = "GoldAlternativeBaseVariant"
+    GOLD_BASE = "GoldBase"
+    GOLD_BASE_VARIANT = "GoldBaseVariant"
 
 
 class WayPaths:  # pylint: disable="too-few-public-methods"
     """Paths a Way can Take"""
 
-    gold: Literal[Ways.GOLD, Ways.GOLD_ALTERNATIVE, Ways.BASE]
-    gold_alternative: Literal[Ways.GOLD_ALTERNATIVE, Ways.BASE_ALTERNATIVE]
-    base_alternative: Literal[Ways.BASE_ALTERNATIVE, Ways.BASE_ALTERNATIVE_VARIANT]
-    base: Literal[Ways.BASE, Ways.BASE_VARIANT]
+    gold: Literal[Ways.GOLD, Ways.GOLD_ALTERNATIVE, Ways.GOLD_BASE]
+    gold_alternative: Literal[Ways.GOLD_ALTERNATIVE, Ways.GOLD_ALTERNATIVE_BASE]
+    gold_alternative_base: Literal[
+        Ways.GOLD_ALTERNATIVE_BASE, Ways.GOLD_ALTERNATIVE_BASE_VARIANT
+    ]
+    gold_base: Literal[Ways.GOLD_BASE, Ways.GOLD_BASE_VARIANT]
 
 
 class Way(Codes, ABC):
@@ -142,10 +151,10 @@ class Way(Codes, ABC):
     way: Literal[
         Ways.GOLD,
         Ways.GOLD_ALTERNATIVE,
-        Ways.BASE,
-        Ways.BASE_ALTERNATIVE,
-        Ways.BASE_ALTERNATIVE_VARIANT,
-        Ways.BASE_VARIANT,
+        Ways.GOLD_ALTERNATIVE_BASE,
+        Ways.GOLD_ALTERNATIVE_BASE_VARIANT,
+        Ways.GOLD_BASE,
+        Ways.GOLD_BASE_VARIANT,
     ]
 
     @staticmethod
@@ -180,9 +189,23 @@ class Way(Codes, ABC):
 
 @pydantic.dataclasses.dataclass  # pylint: disable=c-extension-no-member
 class Modifications(Codes):
-    """A list of modifications along the way an artwork in the Library."""
+    """A unique list of modifications along the way an artwork in the Library."""
 
     modifications: List[Modification]
+
+    def __post_init_post_parse__(self) -> None:
+        """Used to detect and raise and error for the first (if any) duplicates in the modification list"""
+        modification_set: Set[str] = set([])
+        for modification in self.modifications:
+            set_size: int = len(modification_set)
+            modification_set.add(
+                f"{modification.block}{modification.section}{modification.code}"
+            )
+
+            if len(modification_set) == set_size:
+                raise ValueError(
+                    f"Duplicate found in Modifications List:{modification}"
+                )
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         """Looks Up and returns the codes from the Namecodes Database"""
@@ -197,7 +220,7 @@ class Modifications(Codes):
 
 
 def mk_modifications(modifications: List[Modification]) -> Modifications:
-    """Mypy helper class method"""
+    """Mypy helper class function"""
     return Modifications(modifications)  # type: ignore
 
 
@@ -217,10 +240,10 @@ class DataType(Codes):
 
 
 @dataclass
-class BaseVariant(Way):
+class GoldBaseVariant(Way):
     """Modified Base from Unmodified Gold"""
 
-    way = Ways.BASE_VARIANT
+    way = Ways.GOLD_BASE_VARIANT
 
     modifications: Modifications
 
@@ -232,19 +255,19 @@ class BaseVariant(Way):
 
 
 @dataclass
-class Base(Way):
+class GoldBase(Way):
     """Unmodified Base from Unmodified Gold"""
 
-    way = Ways.BASE
+    way = Ways.GOLD_BASE
 
-    base_or_base_variant: Union[Literal[Ways.BASE], BaseVariant]
+    base_or_base_variant: Union[Literal[Ways.GOLD_BASE], GoldBaseVariant]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [self.get_way(all_codes)]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(self.base_or_base_variant, BaseVariant):
+        if isinstance(self.base_or_base_variant, GoldBaseVariant):
             return [
                 *self.base_or_base_variant.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
@@ -253,10 +276,10 @@ class Base(Way):
 
 
 @dataclass
-class BaseAlternativeVariant(Way):
+class GoldAlternativeBaseVariant(Way):
     """ "Modified Base from Alternative Gold"""
 
-    way = Ways.BASE_ALTERNATIVE_VARIANT
+    way = Ways.GOLD_ALTERNATIVE_BASE_VARIANT
 
     modifications: Modifications
 
@@ -268,13 +291,13 @@ class BaseAlternativeVariant(Way):
 
 
 @dataclass
-class BaseAlternative(Way):
+class GoldAlternativeBase(Way):
     """Unmodified Base from Alternative Gold"""
 
-    way = Ways.BASE_ALTERNATIVE
+    way = Ways.GOLD_ALTERNATIVE_BASE
 
-    base_alternative_or_base_alternative_variant: Union[
-        Literal[Ways.BASE_ALTERNATIVE], BaseAlternativeVariant
+    base_or_base_variant: Union[
+        Literal[Ways.GOLD_ALTERNATIVE_BASE], GoldAlternativeBaseVariant
     ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
@@ -282,13 +305,9 @@ class BaseAlternative(Way):
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(
-            self.base_alternative_or_base_alternative_variant, BaseAlternativeVariant
-        ):
+        if isinstance(self.base_or_base_variant, GoldAlternativeBaseVariant):
             return [
-                *self.base_alternative_or_base_alternative_variant.get_codes_r(
-                    all_codes
-                ),
+                *self.base_or_base_variant.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
         return self.get_codes(all_codes)
@@ -302,8 +321,8 @@ class GoldAlternative(Way):
 
     modifications: Modifications
 
-    gold_alternative_or_base_alternative: Union[
-        Literal[Ways.GOLD_ALTERNATIVE], BaseAlternative
+    alternative_or_alternative_base: Union[
+        Literal[Ways.GOLD_ALTERNATIVE], GoldAlternativeBase
     ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
@@ -311,9 +330,9 @@ class GoldAlternative(Way):
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(self.gold_alternative_or_base_alternative, BaseAlternative):
+        if isinstance(self.alternative_or_alternative_base, GoldAlternativeBase):
             return [
-                *self.gold_alternative_or_base_alternative.get_codes_r(all_codes),
+                *self.alternative_or_alternative_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
         return self.get_codes(all_codes)
@@ -325,21 +344,23 @@ class Gold(Way):
 
     way = Ways.GOLD
 
-    gold_or_gold_alternative_or_base: Union[Literal[Ways.GOLD], GoldAlternative, Base]
+    gold_or_gold_alternative_or_gold_base: Union[
+        Literal[Ways.GOLD], GoldAlternative, GoldBase
+    ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return [self.get_way(all_codes)]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
-        if isinstance(self.gold_or_gold_alternative_or_base, GoldAlternative):
+        if isinstance(self.gold_or_gold_alternative_or_gold_base, GoldAlternative):
             return [
-                *self.gold_or_gold_alternative_or_base.get_codes_r(all_codes),
+                *self.gold_or_gold_alternative_or_gold_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
-        if isinstance(self.gold_or_gold_alternative_or_base, Base):
+        if isinstance(self.gold_or_gold_alternative_or_gold_base, GoldBase):
             return [
-                *self.gold_or_gold_alternative_or_base.get_codes_r(all_codes),
+                *self.gold_or_gold_alternative_or_gold_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
             ]
         return self.get_codes(all_codes)
@@ -349,6 +370,7 @@ class Gold(Way):
 class Extension:
     """Filename Extension"""
 
+    # note, not not accept extension just a single period
     extention: str = pydantic.Field(
         None,
         title="File Extension",
