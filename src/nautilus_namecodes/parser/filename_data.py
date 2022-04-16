@@ -43,22 +43,21 @@ class MakeFilenameTest:
     test_extention = Extension("test.time")
 
     test_modifications: Dict[str, Modifications] = {
-        "One": mk_modifications(
+        "A": mk_modifications(
             [
-                Modification("Adaption", "focus", "background"),
+                Modification("Adaption", "prospective", "bottom"),
             ]
         ),
-        "Two": mk_modifications(
+        "AB": mk_modifications(
             [
                 Modification("Adaption", "prospective", "bottom"),
                 Modification("Adaption", "prospective", "top"),
             ]
         ),
-        "Three": mk_modifications(
+        "BA": mk_modifications(
             [
-                Modification("Adaption", "prospective", "bottom"),
                 Modification("Adaption", "prospective", "top"),
-                Modification("Adaption", "focus", "background"),
+                Modification("Adaption", "prospective", "bottom"),
             ]
         ),
     }
@@ -66,24 +65,24 @@ class MakeFilenameTest:
     test_golds: Dict[str, Gold] = {
         "Gold": Gold(Ways.GOLD),
         "GoldAlternative": Gold(
-            GoldAlternative(test_modifications["One"], Ways.GOLD_ALTERNATIVE)
+            GoldAlternative(test_modifications["A"], Ways.GOLD_ALTERNATIVE)
         ),
         "GoldAlternativeBase": Gold(
             GoldAlternative(
-                test_modifications["One"],
+                test_modifications["AB"],
                 GoldAlternativeBase(Ways.GOLD_ALTERNATIVE_BASE),
             )
         ),
         "GoldAlternativeBaseVariant": Gold(
             GoldAlternative(
-                test_modifications["One"],
+                test_modifications["BA"],
                 GoldAlternativeBase(
-                    GoldAlternativeBaseVariant(test_modifications["One"])
+                    GoldAlternativeBaseVariant(test_modifications["A"])
                 ),
             )
         ),
         "GoldBase": Gold(GoldBase(Ways.GOLD_BASE)),
-        "GoldBaseVariant": Gold(GoldBase(GoldBaseVariant(test_modifications["One"]))),
+        "GoldBaseVariant": Gold(GoldBase(GoldBaseVariant(test_modifications["A"]))),
     }
 
     test_filenames: Dict[str, Filename] = {}
@@ -465,18 +464,18 @@ class ParseFilenameTest:  # pylint: disable=too-few-public-methods
 if __name__ == "__main__":
 
     make_filename_test: MakeFilenameTest = MakeFilenameTest()
-    make_parse_filename_test: ParseFilenameTest = ParseFilenameTest()
 
     for enc_filename in make_filename_test.get_test_filename_encoded():
-        # print(enc_filename)
-        pass
+        print(enc_filename)
+
+    make_parse_filename_test: ParseFilenameTest = ParseFilenameTest()
 
     for filename_model in make_parse_filename_test.get_filenames():
-        print("\n\n")
+        ##print("\n\n")
 
         print(filename_model.get_filename(AllNameCodes().get_all_codes))
-        print("\n")
+        # print("\n")
 
-        print(NautilusNamecodesFilenameBaseModel(encoding=filename_model).json())
-        print("\n\n")
+        ##print(NautilusNamecodesFilenameBaseModel(encoding=filename_model).json())
+        ##print("\n\n")
         # print(NautilusNamecodesFilenameBaseModel(encoding=filename_model).schema_json())

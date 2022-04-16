@@ -248,7 +248,10 @@ class GoldBaseVariant(Way):
     modifications: Modifications
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
-        return [*self.modifications.get_codes(all_codes), self.get_way(all_codes)]
+        return [
+            self.get_way(all_codes),
+            *self.modifications.get_codes(all_codes),
+        ]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return self.get_codes(all_codes)
@@ -269,8 +272,8 @@ class GoldBase(Way):
 
         if isinstance(self.base_or_base_variant, GoldBaseVariant):
             return [
-                *self.base_or_base_variant.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
+                *self.base_or_base_variant.get_codes_r(all_codes),
             ]
         return self.get_codes(all_codes)
 
@@ -284,7 +287,10 @@ class GoldAlternativeBaseVariant(Way):
     modifications: Modifications
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
-        return [*self.modifications.get_codes(all_codes), self.get_way(all_codes)]
+        return [
+            self.get_way(all_codes),
+            *self.modifications.get_codes(all_codes),
+        ]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
         return self.get_codes(all_codes)
@@ -307,8 +313,8 @@ class GoldAlternativeBase(Way):
 
         if isinstance(self.base_or_base_variant, GoldAlternativeBaseVariant):
             return [
-                *self.base_or_base_variant.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
+                *self.base_or_base_variant.get_codes_r(all_codes),
             ]
         return self.get_codes(all_codes)
 
@@ -326,14 +332,17 @@ class GoldAlternative(Way):
     ]
 
     def get_codes(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
-        return [*self.modifications.get_codes(all_codes), self.get_way(all_codes)]
+        return [
+            self.get_way(all_codes),
+            *self.modifications.get_codes(all_codes),
+        ]
 
     def get_codes_r(self, all_codes: AllCodes) -> List[Tuple[int, str]]:
 
         if isinstance(self.alternative_or_alternative_base, GoldAlternativeBase):
             return [
-                *self.alternative_or_alternative_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
+                *self.alternative_or_alternative_base.get_codes_r(all_codes),
             ]
         return self.get_codes(all_codes)
 
@@ -355,13 +364,13 @@ class Gold(Way):
 
         if isinstance(self.gold_or_gold_alternative_or_gold_base, GoldAlternative):
             return [
-                *self.gold_or_gold_alternative_or_gold_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
+                *self.gold_or_gold_alternative_or_gold_base.get_codes_r(all_codes),
             ]
         if isinstance(self.gold_or_gold_alternative_or_gold_base, GoldBase):
             return [
-                *self.gold_or_gold_alternative_or_gold_base.get_codes_r(all_codes),
                 *self.get_codes(all_codes),
+                *self.gold_or_gold_alternative_or_gold_base.get_codes_r(all_codes),
             ]
         return self.get_codes(all_codes)
 

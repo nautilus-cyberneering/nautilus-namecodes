@@ -149,7 +149,7 @@ class MarkdownOutput:
 
         sections: Iterable[SectionCodes] = block.sections.values()
         section: SectionCodes
-        section_last: SectionCodes = list(*block.sections.values())[-1]
+        section_last: SectionCodes = list(block.sections.items())[-1][1]
 
         for section in sections:
             codes_data.append(

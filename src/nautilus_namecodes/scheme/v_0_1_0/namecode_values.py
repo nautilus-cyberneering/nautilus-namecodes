@@ -69,11 +69,11 @@ class Way:
     _values: Dict[str, str] = {
         "gold": "The Original Artwork",
         "gold_alternative": "Original Artwork, Modified or Transformed",
-        "GoldAlternativeBase": "Original Artwork, Modified or Transformed, Processed for Public Use",
-        "GoldAlternativeBaseVariant": "Original Artwork, Modified or Transformed, "
+        "gold_alternative_base": "Original Artwork, Modified or Transformed, Processed for Public Use",
+        "gold_alternative_base_variant": "Original Artwork, Modified or Transformed, "
         "Processed for Public Use, Further Modified",
-        "GoldBase": "The Original Artwork, Processed for Public Use",
-        "GoldBaseVariant": "The Original Artwork, Processed for Public Use, Further Modified",
+        "gold_base": "The Original Artwork, Processed for Public Use",
+        "gold_base_variant": "The Original Artwork, Processed for Public Use, Further Modified",
     }
 
     @property
